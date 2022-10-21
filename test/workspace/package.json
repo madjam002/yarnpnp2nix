@@ -1,0 +1,9 @@
+{
+  "packageManager": "yarn@3.2.2",
+  "workspaces": [
+    "packages/*"
+  ],
+  "dependencies": {
+    "esbuild": "^0.15.10"
+  }
+}

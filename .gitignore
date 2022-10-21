@@ -1,0 +1,7 @@
+.direnv
+node_modules
+result
+.pnp.cjs
+.pnp.loader.mjs
+**/.yarn/unplugged
+**/.yarn/install-state.gz

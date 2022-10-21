@@ -1,0 +1,20 @@
+{
+  "name": "testa",
+  "version": "0.0.0",
+  "main": "index.js",
+  "scripts": {
+    "install": "node build.js",
+    "build": "node build.js"
+  },
+  "bin": {
+    "testa-test": "./bin/testa-test"
+  },
+  "dependencies": {
+    "color": "^4.2.3",
+    "esbuild": "^0.15.10",
+    "react-old": "npm:react@^18.2.0"
+  },
+  "devDependencies": {
+    "typescript": "^4.8.4"
+  }
+}
