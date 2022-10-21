@@ -1,0 +1,22 @@
+# This file can't import anything as we include the contents of this file
+# directly in nix eval --apply arguments (see how this file is included in runner/src/common.ts)
+
+with builtins;
+
+let
+  nameValuePair = name: value: { inherit name value; };
+
+  filterAttrs = pred: set:
+    listToAttrs (concatMap (name: let v = set.${name}; in if pred name v then [(nameValuePair name v)] else []) (attrNames set));
+
+  ##
+
+  getPackages = manifest:
+    mapAttrs (name: pkg:
+      filterAttrs (key: b: (builtins.elem key [
+        "name"
+        "outputHash"
+        "outputHashByPlatform"
+      ])) pkg
+    ) manifest;
+in

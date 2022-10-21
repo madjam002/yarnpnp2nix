@@ -21,7 +21,7 @@ let
 
       _outputHash = if builtins.hasAttr "outputHash" packageManifest && packageManifest.outputHash != null then packageManifest.outputHash else null;
       _platformOutputHash = if builtins.hasAttr "outputHashByPlatform" packageManifest && packageManifest.outputHashByPlatform != null then (
-        if builtins.hasAttr pkgs.stdenv.system packageManifest.outputHashByPlatform then packageManifest.outputHashByPlatform."${pkgs.stdenv.system}" else null
+        if builtins.hasAttr pkgs.stdenv.system packageManifest.outputHashByPlatform then packageManifest.outputHashByPlatform."${pkgs.stdenv.system}" else ""
       ) else null;
       outputHash = if _platformOutputHash != null then _platformOutputHash else _outputHash;
 
@@ -124,8 +124,20 @@ let
             cd $packageLocation
             ${buildScripts}
 
+            # create a .ready file so the output matches what yarn unplugs itself
+            # (useful if we want to be able to generate hash for unplugged output automatically)
+            touch .ready
+
+            # if a node_modules folder was created INSIDE an unplugged package, it was probably used for caching
+            # purposes, so we can just remove it. In the offchance that this breaks something, the user
+            # can just specify an outputHash manually in packageOverrides
+            rm -rf node_modules || true
+
+            # remove .pnp.cjs here as it will break Nix (see bug below), it's okay because we recreate it later
+            # in finalDerivation
             rm $out/.pnp.cjs
 
+            # set executable bit with chmod for all bin scripts
             ${concatStringsSep "\n" (mapAttrsToList (binKey: binScript: ''
             chmod +x $out/node_modules/${name}/${binScript}
             '') (if bin != null then bin else {}))}

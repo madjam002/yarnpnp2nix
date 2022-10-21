@@ -6,6 +6,7 @@ Yet another way of packaging Node applications with Nix. Unlike alternatives, th
 - Rebuilding when just changing source code should be fast as dependencies shouldn't be fetched
 - Adding a new dependency should just fetch that dependency rather than fetching or linking all node_modules again
 - Build native modules (e.g canvas) once, and once they are built they shouldn't be built again across packages
+- Unplugged/native modules should have their outputs hashed to try and enforce reproducibility
 - When using workspaces, adding a dependency in another package (modifying the yarn.lock file) in the workspace shouldn't cause a different package to have to be rebuilt
 
 Possible future improvements:
