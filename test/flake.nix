@@ -25,25 +25,40 @@
                 # e.g
                 # outputHash = "sha512-3TVtFilKcMx170rnF8GfVtyqGUT/FnDcrZwlZX3ChtXrehLUKQwnkNlBnTrTdPBbrUygkkp3PZzH6VZrqsCHVQ==";
               };
+              "testa@workspace:packages/testa" = {
+                build = ''
+                  echo $PATH
+                  tsc --version
+                '';
+              };
+              "testb@workspace:packages/testb" = {
+                build = ''
+                  node index
+                '';
+              };
             };
           in
           {
             pkgs = channels.nixpkgs;
             yarn-plugin = yarnpnp2nix.packages."${channels.nixpkgs.stdenv.system}".yarn-plugin;
             react = mkYarnPackageFromManifest {
-              packageManifest = (import ./workspace/yarn-manifest.nix)."react@npm:18.2.0";
+              yarnManifest = import ./workspace/yarn-manifest.nix;
+              package = "react@npm:18.2.0";
               inherit packageOverrides;
             };
             esbuild = mkYarnPackageFromManifest {
-              packageManifest = (import ./workspace/yarn-manifest.nix)."esbuild@npm:0.15.10";
+              yarnManifest = import ./workspace/yarn-manifest.nix;
+              package = "esbuild@npm:0.15.10";
               inherit packageOverrides;
             };
             testa = mkYarnPackageFromManifest {
-              packageManifest = (import ./workspace/yarn-manifest.nix)."testa@workspace:packages/testa";
+              yarnManifest = import ./workspace/yarn-manifest.nix;
+              package = "testa@workspace:packages/testa";
               inherit packageOverrides;
             };
             testb = mkYarnPackageFromManifest {
-              packageManifest = (import ./workspace/yarn-manifest.nix)."testb@workspace:packages/testb";
+              yarnManifest = import ./workspace/yarn-manifest.nix;
+              package = "testb@workspace:packages/testb";
               inherit packageOverrides;
             };
           };

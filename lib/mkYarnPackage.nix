@@ -3,19 +3,39 @@
 with lib;
 
 let
-  mkYarnPackage =
+  nixPlugin = "${pkgs.callPackage ../yarnPlugin.nix {}}/plugin.js";
+
+  setupYarnBinScript = ''
+    export YARN_PLUGINS=${nixPlugin}
+  '';
+
+  mkYarnPackageFromManifest =
+    {
+      package,
+      yarnManifest,
+      packageOverrides ? {},
+    }:
+    mkYarnPackageFromManifest_internal {
+      inherit package;
+      inherit yarnManifest;
+      inherit packageOverrides;
+      allPackageData = buildPackageDataFromYarnManifest { inherit yarnManifest; inherit packageOverrides; };
+    };
+
+  mkYarnPackage_internal =
     {
       name,
       outputName ? name,
       src ? null,
       packageManifest,
-      packageOverrides ? {},
+      allPackageData,
       nodejsPackage ? pkgs.nodejs,
-      buildScripts ? "",
+      build ? "",
     }:
     let
       shouldBeUnplugged = if builtins.hasAttr "shouldBeUnplugged" packageManifest then packageManifest.shouldBeUnplugged else false;
       locatorHash = packageManifest.locatorHash;
+      ident = "${name}@${reference}";
       reference = packageManifest.reference;
       bin = if builtins.hasAttr "bin" packageManifest && packageManifest.bin != null then packageManifest.bin else null;
 
@@ -27,42 +47,56 @@ let
 
       willFetch = if src == null then true else false;
       willBuild = !willFetch;
+      willOutputBeZip = src == null && shouldBeUnplugged == false;
+
+      locatorJSON = builtins.toJSON (builtins.toJSON {
+        name = packageManifest.flatName;
+        scope = packageManifest.scope;
+        reference = packageManifest.reference;
+      });
 
       packageRegistry = buildPackageRegistry {
-        inherit packageOverrides;
         topLevel = packageManifest;
+        inherit allPackageData;
       };
 
-      packageDependencies = builtins.toJSON packageRegistry; # TODO what about dependencies vs devDependencies
+      dependencyBinPaths = filter (d: d != null) (mapAttrsToList (dep: pkg:
+        let
+          pkgData = packageRegistry."${pkg.name}@${pkg.reference}";
+        in
+        if pkgData.drvPath != "/dev/null" then pkgData.drvPath.binDrvPath + "/bin" else null
+      ) packageManifest.dependencies);
 
-      # unsafeDiscardStringContext is undocumented
-      # https://github.com/NixOS/nix/blob/ac0fb38e8a5a25a84fa17704bd31b453211263eb/src/libexpr/primops/context.cc#L8
-      # it basically lets us remove any "dependencies" of a string so we can use the store paths without causing them to be built,
-      # which is helpful as we want to build a .pnp.cjs file with the store paths but we only want the paths to be realised
-      # if necessary (e.g devDependencies if building ONLY)
-      packageRegistryJSON = builtins.unsafeDiscardStringContext (builtins.toJSON (packageRegistry));
+      packageRegistryJSON = builtins.toJSON packageRegistry;
 
-      nixPlugin = "${pkgs.callPackage ../yarnPlugin.nix {}}/plugin.js";
+      # Bit of a HACK, builtins.toFile cannot contain a string with references to /nix/store paths,
+      # so we extract the "context" (which is a reference to any /nix/store paths in the JSON), then remove
+      # the context from the string and write the resulting string to disk using builtins.toFile.
+      # We then manually append the context which contains the references to the /nix/store paths
+      # to `createLockFileScript` so when the script is used, any npm dependency /nix/store paths
+      # are built and realised.
+      packageRegistryContext = builtins.getContext packageRegistryJSON;
 
-      setupYarnBinScript = ''
-        export YARN_PLUGINS=${nixPlugin}
-      '';
+      packageRegistryFile = builtins.toFile "yarn-package-registry.json" (
+        # unsafeDiscardStringContext is undocumented
+        # https://github.com/NixOS/nix/blob/ac0fb38e8a5a25a84fa17704bd31b453211263eb/src/libexpr/primops/context.cc#L8
+        builtins.unsafeDiscardStringContext packageRegistryJSON
+      );
 
-      createLockFileScript = ''
-        packageRegistryData="$(echo ${builtins.toJSON packageRegistryJSON} | ${pkgs.jq}/bin/jq -rcM \
-          --arg packageLocation "$packageLocation/" \
-          --arg package ${builtins.toJSON (builtins.toString name)} \
-          --arg reference ${builtins.toJSON (builtins.toString reference)} \
-          '.[$package][$reference].packageLocation = $packageLocation')"
+      createLockFileScript = builtins.appendContext ''
+        cat ${packageRegistryFile} | ${pkgs.jq}/bin/jq -rcM \
+          --arg drvPath "$packageDrvLocation" \
+          --arg ident ${builtins.toJSON ("${ident}")} \
+          '.[$ident].drvPath = $drvPath' > $tmpDir/packageRegistryData.json
 
-        yarn nix create-lockfile "$packageRegistryData"
-      '';
+        yarn nix create-lockfile $tmpDir/packageRegistryData.json
+      '' packageRegistryContext;
 
       fetchDerivation = pkgs.stdenv.mkDerivation {
-        name = outputName;
+        name = outputName + (if willOutputBeZip then ".zip" else "");
         phases =
-          (if willFetch then [ "fetchPhase" ] else [ "packPhase" ]) ++
-          (if shouldBeUnplugged then [ "unplugPhase" "buildPhase" ] else [ "movePhase" ]);
+          (if willFetch then [ "fetchPhase" ] else [ "buildPhase" "packPhase" ]) ++
+          (if shouldBeUnplugged then [ "unplugPhase" ] else [ "movePhase" ]);
 
         outputHashMode = if outputHash != null then (if shouldBeUnplugged then "recursive" else "flat") else null;
         outputHashAlgo = if outputHash != null then "sha512" else null;
@@ -76,28 +110,63 @@ let
 
         fetchPhase =
           if willFetch then ''
-            # ${builtins.toJSON packageDependencies}
             tmpDir=$PWD
             ${setupYarnBinScript}
 
             packageLocation=$out/node_modules/${name}
-            ${createLockFileScript}
+            touch yarn.lock
 
-            yarn nix fetch-by-locator ${locatorHash} $tmpDir
+            yarn nix fetch-by-locator ${locatorJSON} $tmpDir
+          '' else " ";
+
+        buildPhase =
+          if !willFetch then ''
+            tmpDir=$PWD
+            ${setupYarnBinScript}
+
+            ${if build != "" then ''
+            packageLocation="$out/node_modules/${name}"
+            packageDrvLocation="$out"
+            mkdir -p $packageLocation
+            ${createLockFileScript}
+            yarn nix generate-pnp-file $out $tmpDir/packageRegistryData.json "$packageLocation"
+
+            cp -rT ${src} $packageLocation
+            chmod -R +w $packageLocation
+
+            cd $packageLocation
+            nodeOptions="--require $out/.pnp.cjs"
+            oldNodeOptions="$NODE_OPTIONS"
+            oldPath="$PATH"
+            export NODE_OPTIONS="$NODE_OPTIONS $nodeOptions"
+            export PATH="$PATH:${concatStringsSep ":" dependencyBinPaths}"
+
+            ${build}
+
+            export NODE_OPTIONS="$oldNodeOptions"
+            export PATH="$oldPath"
+            cd $tmpDir
+            '' else ""}
+
           '' else " ";
 
         packPhase =
           if !willFetch then ''
-            # ${builtins.toJSON packageDependencies}
-            tmpDir=$PWD
-            ${setupYarnBinScript}
+            touch yarn.lock
 
-            packageLocation=$out/node_modules/${name}
-            ${createLockFileScript}
-
+            ${if build != "" then ''
+            export YARNNIX_PACK_DIRECTORY="$packageLocation"
+            '' else ''
             export YARNNIX_PACK_DIRECTORY="${src}"
+            ''}
+
+            packageLocation="$out/node_modules/${name}"
+            packageDrvLocation="$out"
+
             yarn pack -o $tmpDir/package.tgz
-            yarn nix convert-to-zip ${locatorHash} $tmpDir/package.tgz $tmpDir/output.zip
+            yarn nix convert-to-zip ${locatorJSON} $tmpDir/package.tgz $tmpDir/output.zip
+
+            ${if build != "" then "rm -rf $out" else ""}
           '' else " ";
 
         unplugPhase =
@@ -106,23 +175,13 @@ let
           # sed -i "s!__PACKAGE_PATH_HERE__!$packageLocation/!" $out/.pnp.cjs
           if shouldBeUnplugged then ''
             mkdir -p $out
-            unzip -qq -d $out $tmpDir/*.zip
+            unzip -qq -d $out $tmpDir/output.zip
 
-            yarn nix generate-pnp-file $out "$packageRegistryData" "$packageLocation"
-          '' else " ";
+            ${if build == "" then createLockFileScript else ""}
 
-        movePhase =
-          if !shouldBeUnplugged then ''
-            # won't be unplugged, so move zip file to output
-            mv $tmpDir/output.zip $out
-          '' else " ";
+            yarn nix generate-pnp-file $out $tmpDir/packageRegistryData.json "$packageLocation"
 
-        buildPhase =
-          if shouldBeUnplugged then ''
             yarn nix run-build-scripts ${locatorHash} $out $packageLocation
-
-            cd $packageLocation
-            ${buildScripts}
 
             # create a .ready file so the output matches what yarn unplugs itself
             # (useful if we want to be able to generate hash for unplugged output automatically)
@@ -142,6 +201,12 @@ let
             chmod +x $out/node_modules/${name}/${binScript}
             '') (if bin != null then bin else {}))}
           '' else " ";
+
+        movePhase =
+          if !shouldBeUnplugged then ''
+            # won't be unplugged, so move zip file to output
+            mv $tmpDir/output.zip $out
+          '' else " ";
       };
 
       # have a separate derivation that includes the .pnp.cjs and wrapped bins
@@ -151,30 +216,31 @@ let
       # https://github.com/NixOS/nix/issues/6660
       # https://github.com/NixOS/nix/issues/7148 (maybe)
       # without this workaround we get error: unexpected end-of-file errors
-      finalDerivation = if shouldBeUnplugged == null || shouldBeUnplugged == false then fetchDerivation else pkgs.stdenv.mkDerivation {
+      finalDerivation = pkgs.stdenv.mkDerivation {
         name = outputName;
         phases =
-          (if shouldBeUnplugged then [ "unplugPhase" ] else []) ++
-          (if shouldBeUnplugged && bin != null then [ "wrapBinPhase" ] else []);
+          [ "generateRuntimePhase" ] ++
+          (if bin != null then [ "wrapBinPhase" ] else []);
 
         buildInputs = with pkgs; [
           nodejsPackage
           yarnBerry
         ];
 
-        unplugPhase = ''
+        generateRuntimePhase = ''
           tmpDir=$PWD
           ${setupYarnBinScript}
 
           packageLocation=${fetchDerivation}/node_modules/${name}
+          packageDrvLocation=${fetchDerivation}
           ${createLockFileScript}
 
           mkdir -p $out
-          yarn nix generate-pnp-file $out "$packageRegistryData" "$packageLocation"
+          yarn nix generate-pnp-file $out $tmpDir/packageRegistryData.json "$packageLocation"
         '';
 
         wrapBinPhase =
-          if shouldBeUnplugged && bin != null then ''
+          if bin != null then ''
             mkdir -p $out/bin
 
             ${concatStringsSep "\n" (mapAttrsToList (binKey: binScript: ''
@@ -186,9 +252,10 @@ let
             nodeOptions="--require $out/.pnp.cjs"
             export NODE_OPTIONS="\''$NODE_OPTIONS \''$nodeOptions"
 
-            ${fetchDerivation}/node_modules/${name}/${binScript}
+            ${if shouldBeUnplugged then ''${fetchDerivation}/node_modules/${name}/${binScript} "\$@"''
+            else ''node ${fetchDerivation}/node_modules/${name}/${binScript} "\$@"''}
             EOF
-            chmod +x $out/bin/${binKey} # $out/node_modules/${name}/${binScript}
+            chmod +x $out/bin/${binKey}
             '') bin)}
           '' else " ";
       };
@@ -196,33 +263,36 @@ let
     finalDerivation // {
       package = fetchDerivation;
       # for debugging with nix eval
+      inherit packageRegistry;
       inherit packageRegistryJSON;
+      inherit dependencyBinPaths;
     };
 
-  mkYarnPackageFromManifest =
+  mkYarnPackageFromManifest_internal =
     {
-      packageManifest,
-      packageOverrides ? {},
-      buildScripts ? "",
+      package,
+      yarnManifest,
+      packageOverrides,
+      allPackageData,
     }:
     let
+      packageManifest = yarnManifest."${package}";
       nameAndRef = "${packageManifest.name}@${packageManifest.reference}";
       mergedManifest =
         packageManifest //
         (if hasAttr nameAndRef packageOverrides then packageOverrides."${nameAndRef}" else {});
     in
-    mkYarnPackage {
-      inherit packageOverrides;
-      inherit buildScripts;
+    mkYarnPackage_internal {
       inherit (mergedManifest) name outputName;
       packageManifest = mergedManifest;
-
+      inherit allPackageData;
       src = if hasAttr "src" mergedManifest then mergedManifest.src else null;
+      build = if hasAttr "build" mergedManifest then mergedManifest.build else "";
     };
 
-  buildPackageRegistry =
+  buildPackageDataFromYarnManifest =
     {
-      topLevel,
+      yarnManifest,
       packageOverrides,
     }:
     let
@@ -232,16 +302,48 @@ let
         {
           inherit (pkg) name reference linkType;
           manifest = filterAttrs (key: b: !(builtins.elem key [
-            "src" "installCondition" "dependencies"
+            "src" "installCondition" "dependencies" "otherVisibleDependencies"
           ])) pkg;
-          packageLocation = if pkg != topLevel then (mkYarnPackageFromManifest {
-            packageManifest = pkg;
-            inherit packageOverrides;
-          }).package + "/node_modules/${pkg.name}/" else "/dev/null"; # if package is toplevel package then the location is determined in the buildPhase as it will be $out
+          drvPath =
+            let
+              drv = (mkYarnPackageFromManifest_internal {
+                inherit yarnManifest;
+                package = "${pkg.name}@${pkg.reference}";
+                inherit packageOverrides;
+                inherit allPackageData;
+              });
+            in
+            drv.package // { binDrvPath = drv; };
           packageDependencies = if (hasAttr "dependencies" pkg && pkg.dependencies != null) then mapAttrs (name: pkg:
             [ pkg.name pkg.reference ]
           ) pkg.dependencies else [];
         };
+
+      allPackageData =
+        mapAttrs (__: pkg: getPackageDataForPackage pkg) yarnManifest;
+    in
+    allPackageData;
+
+  buildPackageRegistry =
+    {
+      topLevel,
+      allPackageData,
+    }:
+    let
+      getPackageDataForPackage = pkg:
+        if pkg != topLevel then allPackageData."${pkg.name}@${pkg.reference}" else (
+          if hasAttr "installCondition" pkg && pkg.installCondition != null && (pkg.installCondition pkgs.stdenv) == false then null
+          else
+          {
+            inherit (pkg) name reference linkType;
+            manifest = filterAttrs (key: b: !(builtins.elem key [
+              "src" "installCondition" "dependencies" "otherVisibleDependencies"
+            ])) pkg;
+            drvPath = "/dev/null"; # if package is toplevel package then the location is determined in the buildPhase as it will be $out
+            packageDependencies = if (hasAttr "dependencies" pkg && pkg.dependencies != null) then mapAttrs (name: pkg:
+              [ pkg.name pkg.reference ]
+            ) pkg.dependencies else [];
+          });
       getRecursivePackages = curr: flatten (
         [curr] ++
         (if hasAttr "dependencies" curr && curr.dependencies != null then (mapAttrsToList (__: package: package) curr.dependencies) else []) ++
@@ -249,25 +351,14 @@ let
         (if hasAttr "otherVisibleDependencies" curr && curr.otherVisibleDependencies != null then (mapAttrsToList (__: package: getRecursivePackages package) curr.otherVisibleDependencies) else [])
       );
       flattenedPackages = getRecursivePackages topLevel;
-      packageDatasList =
-        filter (pkg: pkg != null) (map getPackageDataForPackage flattenedPackages);
-      uniquePackageNames = unique (map (manifest: manifest.name) packageDatasList);
       packageRegistryData = listToAttrs (
-        map (packageName: {
-          name = packageName;
-          value =
-            let
-              packageDependencyMatches = filter (manifest: manifest.name == packageName) packageDatasList;
-            in
-            listToAttrs (
-              map (manifest: {
-                name = manifest.reference;
-                value = manifest;
-              }) packageDependencyMatches
-            );
-        }) uniquePackageNames
+        map (pkg: {
+          name = "${pkg.name}@${pkg.reference}";
+          value = getPackageDataForPackage pkg;
+        }) flattenedPackages
       );
     in
+    # builtins.trace "calculating for ${topLevel.name}" packageRegistryData;
     packageRegistryData;
 in
 {

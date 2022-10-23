@@ -76,8 +76,14 @@ const plugin: Plugin<Hooks> = {
 
           configuration.values.set('enableMirror', false) // disable global cache as we want to output to outDirectory
 
+          const locator = {
+            ...(JSON.parse(this.locator)),
+            locatorHash: '',
+            identHash: '',
+          }
+
           const fetchOptions = { checksums: new Map(), project, cache: new Cache(this.outDirectory, { check: false, configuration, immutable: false }), fetcher, report }
-          const fetched = await fetcher.fetch(project.originalPackages.get(this.locator), fetchOptions)
+          const fetched = await fetcher.fetch(locator, fetchOptions)
 
           fs.renameSync(fetched.packageFs.target, path.join(this.outDirectory, 'output.zip'))
         });
@@ -87,7 +93,7 @@ const plugin: Plugin<Hooks> = {
     class CreateLockFileCommand extends BaseCommand {
       static paths = [['nix', 'create-lockfile']]
 
-      packageRegistryDataJSON = Option.String({validator: t.isString()})
+      packageRegistryDataPath = Option.String({validator: t.isString()})
 
       async execute() {
         const configuration = await Configuration.find(process.cwd(), this.context.plugins);
@@ -95,59 +101,58 @@ const plugin: Plugin<Hooks> = {
         const project = new Project(process.cwd(), { configuration })
         await project.setupResolutions()
 
-        const packageRegistryData = JSON.parse(this.packageRegistryDataJSON)
+        const packageRegistryData = JSON.parse(fs.readFileSync(this.packageRegistryDataPath, 'utf8'))
 
-        for (const pkgName of Object.keys(packageRegistryData)) {
-          for (const reference of Object.keys(packageRegistryData[pkgName])) {
-            const pkg = packageRegistryData[pkgName][reference]?.manifest
+        for (const pkgIdent of Object.keys(packageRegistryData)) {
+          const pkg = packageRegistryData[pkgIdent]?.manifest
+          if (!pkg) continue
 
-            //  {
-            //   identHash: '9ca470fa61f45e067b8912c4342a3400ef0a72ba40cc23c2c0b328fe2213be1f145c35685252f614b708022def6c86380b66b07686cf36dd332caae8d849136f',
-            //   scope: null,
-            //   name: 'typescript',
-            //   locatorHash: '9c0a3355115b252fc54c3916c6fcccf92c84041e4ac48c6ff1334782d6b0b707fd13645250cee7bae78e22cc73b5b806db08dd49dd0afa0ffcb6adeb10543ad6',
-            //   reference: 'npm:4.8.4',
-            //   version: '4.8.4',
-            //   languageName: 'node',
-            //   linkType: 'HARD',
-            //   conditions: null,
-            //   dependencies: Map(0) {},
-            //   peerDependencies: Map(0) {},
-            //   dependenciesMeta: Map(0) {},
-            //   peerDependenciesMeta: Map(0) {},
-            //   bin: Map(2) { 'tsc' => 'bin/tsc', 'tsserver' => 'bin/tsserver' }
-            // }
+          //  {
+          //   identHash: '9ca470fa61f45e067b8912c4342a3400ef0a72ba40cc23c2c0b328fe2213be1f145c35685252f614b708022def6c86380b66b07686cf36dd332caae8d849136f',
+          //   scope: null,
+          //   name: 'typescript',
+          //   locatorHash: '9c0a3355115b252fc54c3916c6fcccf92c84041e4ac48c6ff1334782d6b0b707fd13645250cee7bae78e22cc73b5b806db08dd49dd0afa0ffcb6adeb10543ad6',
+          //   reference: 'npm:4.8.4',
+          //   version: '4.8.4',
+          //   languageName: 'node',
+          //   linkType: 'HARD',
+          //   conditions: null,
+          //   dependencies: Map(0) {},
+          //   peerDependencies: Map(0) {},
+          //   dependenciesMeta: Map(0) {},
+          //   peerDependenciesMeta: Map(0) {},
+          //   bin: Map(2) { 'tsc' => 'bin/tsc', 'tsserver' => 'bin/tsserver' }
+          // }
 
-            const origPackage = {
-              identHash: pkg.descriptorIdentHash,
-              scope: pkg.scope,
-              name: pkg.flatName,
-              locatorHash: pkg.locatorHash,
-              reference: pkg.reference,
-              languageName: pkg.languageName,
-              linkType: pkg.linkType,
-              conditions: null,
-              // it appears we don't need to bother storing dependencies as the above is enough to reconstruct the parts of the lock file that we need
-              // dependencies: new Map(),
-              // bin: pkg.bin, // TODO to map
-            }
-            project.originalPackages.set(pkg.locatorHash, origPackage)
-
-            // storedResolutions is a map of descriptorHash -> locatorHash
-            project.storedResolutions.set(pkg.descriptorHash, pkg.locatorHash)
-
-            // storedChecksums is a map of locatorHash -> checksum
-            if (pkg.checksum != null) project.storedChecksums.set(pkg.locatorHash, pkg.checksum)
-
-            const descriptor = {
-              identHash: pkg.descriptorIdentHash,
-              scope: pkg.scope,
-              name: pkg.flatName,
-              descriptorHash: pkg.descriptorHash,
-              range: pkg.descriptorRange,
-            }
-            project.storedDescriptors.set(pkg.descriptorHash, descriptor)
+          const origPackage = {
+            identHash: pkg.descriptorIdentHash,
+            scope: pkg.scope,
+            name: pkg.flatName,
+            locatorHash: pkg.locatorHash,
+            reference: pkg.reference,
+            languageName: pkg.languageName,
+            linkType: pkg.linkType,
+            conditions: null,
+            // it appears we don't need to bother storing dependencies as the above is enough to reconstruct the parts of the lock file that we need
+            // dependencies: new Map(),
+            // bin: pkg.bin, // TODO to map
           }
+          project.originalPackages.set(pkg.locatorHash, origPackage)
+
+          // storedResolutions is a map of descriptorHash -> locatorHash
+          project.storedResolutions.set(pkg.descriptorHash, pkg.locatorHash)
+
+          // storedChecksums is a map of locatorHash -> checksum
+          if (pkg.checksum != null) project.storedChecksums.set(pkg.locatorHash, pkg.checksum)
+
+          const descriptor = {
+            identHash: pkg.descriptorIdentHash,
+            scope: pkg.scope,
+            name: pkg.flatName,
+            descriptorHash: pkg.descriptorHash,
+            range: pkg.descriptorRange,
+          }
+          project.storedDescriptors.set(pkg.descriptorHash, descriptor)
         }
 
         project.storedPackages = project.originalPackages
@@ -167,7 +172,12 @@ const plugin: Plugin<Hooks> = {
         const configuration = await Configuration.find(process.cwd(), this.context.plugins);
         const {project, workspace} = await Project.find(configuration, process.cwd());
 
-        const locator = project.originalPackages.get(this.locator)
+        // const locator = project.originalPackages.get(this.locator)
+        const locator = {
+          ...(JSON.parse(this.locator)),
+          locatorHash: '',
+          identHash: '',
+        }
 
         const { path } = await tgzUtils.convertToZip(fs.readFileSync(this.tgzPath), {
           compressionLevel: project.configuration.get(`compressionLevel`),
@@ -182,7 +192,7 @@ const plugin: Plugin<Hooks> = {
       static paths = [['nix', 'generate-pnp-file']]
 
       outDirectory = Option.String({validator: t.isString()})
-      packageRegistryDataJSON = Option.String({validator: t.isString()})
+      packageRegistryDataPath = Option.String({validator: t.isString()})
       topLevelPackageDirectory = Option.String({validator: t.isString()})
 
       async execute() {
@@ -203,35 +213,34 @@ const plugin: Plugin<Hooks> = {
 
         const packageRegistry = new Map()
 
-        const packageRegistryData = JSON.parse(this.packageRegistryDataJSON)
+        const packageRegistryData = JSON.parse(fs.readFileSync(this.packageRegistryDataPath, 'utf8'))
 
         let topLevelPackage = null
 
-        for (const pkgName of Object.keys(packageRegistryData)) {
-          for (const reference of Object.keys(packageRegistryData[pkgName])) {
-            const pkg = packageRegistryData[pkgName][reference]
+        for (const pkgIdent of Object.keys(packageRegistryData)) {
+          const pkg = packageRegistryData[pkgIdent]
+          if (!pkg) continue
 
-            const packageDependencies = new Map()
-            if (pkg.packageDependencies != null) {
-              for (const dep of Object.keys(pkg.packageDependencies)) {
-                packageDependencies.set(dep, pkg.packageDependencies[dep]);
-              }
+          const packageDependencies = new Map()
+          if (pkg.packageDependencies != null) {
+            for (const dep of Object.keys(pkg.packageDependencies)) {
+              packageDependencies.set(dep, pkg.packageDependencies[dep]);
             }
+          }
 
-            const packageData = {
-              // packageLocation: pkg.packageLocation.startsWith('/nix/store') ? `../../..${pkg.packageLocation}` : pkg.packageLocation,
-              packageLocation: pkg.packageLocation,
-              packageDependencies,
-              // packagePeers,
-              linkType: pkg.linkType,
-              // discardFromLookup: fetchResult.discardFromLookup || false,
-            }
+          const packageData = {
+            // packageLocation: pkg.packageLocation.startsWith('/nix/store') ? `../../..${pkg.packageLocation}` : pkg.packageLocation,
+            packageLocation: pkg.drvPath + '/node_modules/' + pkg.name + '/',
+            packageDependencies,
+            // packagePeers,
+            linkType: pkg.linkType,
+            // discardFromLookup: fetchResult.discardFromLookup || false,
+          }
 
-            miscUtils.getMapWithDefault(packageRegistry, pkgName).set(reference, packageData);
+          miscUtils.getMapWithDefault(packageRegistry, pkg.name).set(pkg.reference, packageData);
 
-            if (pkg.packageLocation.startsWith(this.topLevelPackageDirectory)) {
-              topLevelPackage = packageData
-            }
+          if (packageData.packageLocation.startsWith(this.topLevelPackageDirectory)) {
+            topLevelPackage = packageData
           }
         }
 
@@ -328,6 +337,9 @@ const plugin: Plugin<Hooks> = {
             return [linker, installer] as [Linker, Installer];
           }));
 
+          const resolver = project.configuration.makeResolver();
+          const resolveOptions = {project, report: opts.report, resolver}
+
           const packageManifest: any = {}
 
           for (const [__, pkg] of project.originalPackages) {
@@ -335,6 +347,8 @@ const plugin: Plugin<Hooks> = {
             const installer = installers.get(linker)
 
             const src = pkg.reference.startsWith('workspace:') ? `./${pkg.reference.substring('workspace:'.length)}` : null
+            const bin = pkg.bin != null ? Object.fromEntries(pkg.bin) : null
+
             const shouldBeUnplugged = src != null ? true : (installer?.shouldBeUnplugged != null ? installer.customData.store.get(pkg.locatorHash) != null ? installer.shouldBeUnplugged(pkg, installer.customData.store.get(pkg.locatorHash), project.getDependencyMeta(structUtils.isVirtualLocator(pkg) ? structUtils.devirtualizeLocator(pkg) : pkg, pkg.version)) : false : true)
             const willOutputBeZip = !src && !shouldBeUnplugged
 
@@ -384,8 +398,8 @@ const plugin: Plugin<Hooks> = {
               const dependency = await project.configuration.reduceHook(hooks => {
                 return hooks.reduceDependency;
               }, value, project, pkg, value, {
-                // resolver,
-                // resolveOptions,
+                resolver,
+                resolveOptions,
               });
 
               const resolvedLocatorHash = project.storedResolutions.get(dependency?.descriptorHash ?? value.descriptorHash)
@@ -398,19 +412,23 @@ const plugin: Plugin<Hooks> = {
               }
             }))
 
-            const allVisibleDependencies = await Promise.all(Array.from(pkg.dependencies).map(async ([key, value]) => {
+            const allVisibleDependencies = (await Promise.all(Array.from(pkg.dependencies).map(async ([key, value]) => {
               // same as dependencies, but in yarn scriptUtils sometimes dependencies get resolved without the reduceDependency hook above,
               // which can resolve to different dependencies, and then scriptUtils expects those packages to be in the lock file/pnp map,
               // so we must include them in case they are used.
               const resolvedLocatorHash = project.storedResolutions.get(value.descriptorHash)
               const resolvedPkg = resolvedLocatorHash != null ? project.originalPackages.get(resolvedLocatorHash) :
                 null
+              if (!resolvedPkg) {
+                console.log('failed to resolve', key, value)
+                return null
+              }
               return {
                 key,
                 name: structUtils.stringifyIdent(value),
                 packageManifestId: structUtils.stringifyIdent(resolvedPkg) + '@' + resolvedPkg.reference,
               }
-            }))
+            }))).filter(pkg => !!pkg)
 
             const manifestPackageId = structUtils.stringifyIdent(pkg) + '@' + pkg.reference
 
@@ -475,13 +493,13 @@ const plugin: Plugin<Hooks> = {
               reference: pkg.reference,
               locatorHash: pkg.locatorHash,
               linkType: pkg.linkType, // HARD package links are the most common, and mean that the target location is fully owned by the package manager. SOFT links, on the other hand, typically point to arbitrary user-defined locations on disk.
-              outputName: [structUtils.stringifyIdent(pkg), pkg.version, pkg.locatorHash.substring(0, 10)].filter(part => !!part).join('-') + (willOutputBeZip ? '.zip' : ''),
+              outputName: [structUtils.stringifyIdent(pkg), pkg.version, pkg.locatorHash.substring(0, 10)].filter(part => !!part).join('-').replace(/@/g, '').replace(/[\/]/g, '-'),
               outputHash,
               outputHashByPlatform,
               src,
               shouldBeUnplugged,
               installCondition,
-              bin: pkg.bin != null ? Object.fromEntries(pkg.bin) : null,
+              bin,
 
               // other things necessary for recreating lock file that we don't necessarily use
               flatName: pkg.name,
