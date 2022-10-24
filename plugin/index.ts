@@ -52,6 +52,7 @@ const plugin: Plugin<Hooks> = {
     const { xfs, CwdFS, PortablePath } = require('@yarnpkg/fslib')
     const { ZipOpenFS } = require('@yarnpkg/libzip')
     const { getPnpPath, pnpUtils } = require('@yarnpkg/plugin-pnp')
+    const { fileUtils } = require('@yarnpkg/plugin-file')
     const { Option } = require('clipanion')
     const t = require('typanion')
 
@@ -103,10 +104,10 @@ const plugin: Plugin<Hooks> = {
 
         const packageRegistryData = JSON.parse(fs.readFileSync(this.packageRegistryDataPath, 'utf8'))
 
-        for (const pkgIdent of Object.keys(packageRegistryData)) {
-          const pkg = packageRegistryData[pkgIdent]?.manifest
-          if (!pkg) continue
+        const packageRegistryPackages: any[] = Object.values(packageRegistryData).filter(pkg => !!pkg?.manifest)
 
+        for (const _package of packageRegistryPackages) {
+          const pkg = _package.manifest
           //  {
           //   identHash: '9ca470fa61f45e067b8912c4342a3400ef0a72ba40cc23c2c0b328fe2213be1f145c35685252f614b708022def6c86380b66b07686cf36dd332caae8d849136f',
           //   scope: null,
@@ -124,6 +125,9 @@ const plugin: Plugin<Hooks> = {
           //   bin: Map(2) { 'tsc' => 'bin/tsc', 'tsserver' => 'bin/tsserver' }
           // }
 
+          const dependencies = new Map()
+          const bin = new Map(Object.entries(pkg.bin ?? {}))
+
           const origPackage = {
             identHash: pkg.descriptorIdentHash,
             scope: pkg.scope,
@@ -133,9 +137,8 @@ const plugin: Plugin<Hooks> = {
             languageName: pkg.languageName,
             linkType: pkg.linkType,
             conditions: null,
-            // it appears we don't need to bother storing dependencies as the above is enough to reconstruct the parts of the lock file that we need
-            // dependencies: new Map(),
-            // bin: pkg.bin, // TODO to map
+            dependencies,
+            bin,
           }
           project.originalPackages.set(pkg.locatorHash, origPackage)
 
@@ -153,6 +156,24 @@ const plugin: Plugin<Hooks> = {
             range: pkg.descriptorRange,
           }
           project.storedDescriptors.set(pkg.descriptorHash, descriptor)
+        }
+
+        for (const _package of packageRegistryPackages) {
+          const pkg = project.originalPackages.get(_package.manifest.locatorHash)
+          if (!pkg) continue
+
+          const pkgDependencies = _package.packageDependencies ?? {}
+
+          for (const dependencyName of Object.keys(pkgDependencies)) {
+            const [depPkgName, depPkgReference] = pkgDependencies[dependencyName]
+            const depPkg = packageRegistryPackages.find(pkg => pkg?.manifest?.name === depPkgName && pkg?.manifest?.reference === depPkgReference)
+            if (depPkg?.manifest?.descriptorHash != null) {
+              const depPkgDescriptor = project.storedDescriptors.get(depPkg.manifest.descriptorHash)
+              if (depPkgDescriptor != null) {
+                pkg.dependencies.set(depPkg.manifest.descriptorHash, depPkgDescriptor)
+              }
+            }
+          }
         }
 
         project.storedPackages = project.originalPackages
@@ -337,16 +358,38 @@ const plugin: Plugin<Hooks> = {
             return [linker, installer] as [Linker, Installer];
           }));
 
+          const fetcher = project.configuration.makeFetcher();
+          const fetchOptions = { checksums: new Map(), project, cache: null, fetcher, report: null }
+
           const resolver = project.configuration.makeResolver();
           const resolveOptions = {project, report: opts.report, resolver}
 
           const packageManifest: any = {}
 
-          for (const [__, pkg] of project.originalPackages) {
+          for (const [__, pkg] of project.storedPackages) {
+            if (structUtils.isVirtualLocator(pkg)) {
+              continue
+            }
+
             const linker = linkers.find(linker => linker.supportsPackage(pkg, linkerOptions));
             const installer = installers.get(linker)
 
-            const src = pkg.reference.startsWith('workspace:') ? `./${pkg.reference.substring('workspace:'.length)}` : null
+            let localPath = fetcher.getLocalPath(pkg, fetchOptions)
+
+            if (!localPath) {
+              const fileParsedSpec = fileUtils.parseSpec(pkg.reference)
+              if (fileParsedSpec?.parentLocator != null && fileParsedSpec?.path != null) {
+                const parentLocalPath = fetcher.getLocalPath(fileParsedSpec.parentLocator, fetchOptions)
+                const resolvedPath = path.resolve(parentLocalPath, fileParsedSpec.path)
+                if (resolvedPath != null) {
+                  localPath = resolvedPath
+                }
+              }
+            }
+
+            const localPathRelative = localPath != null ? './' + path.relative(project.cwd, localPath) : null
+
+            const src = pkg.reference.startsWith('workspace:') ? `./${pkg.reference.substring('workspace:'.length)}` : (localPathRelative != null ? localPathRelative : null)
             const bin = pkg.bin != null ? Object.fromEntries(pkg.bin) : null
 
             const shouldBeUnplugged = src != null ? true : (installer?.shouldBeUnplugged != null ? installer.customData.store.get(pkg.locatorHash) != null ? installer.shouldBeUnplugged(pkg, installer.customData.store.get(pkg.locatorHash), project.getDependencyMeta(structUtils.isVirtualLocator(pkg) ? structUtils.devirtualizeLocator(pkg) : pkg, pkg.version)) : false : true)
@@ -394,34 +437,16 @@ const plugin: Plugin<Hooks> = {
               }
             }
 
-            const dependencies = await Promise.all(Array.from(pkg.dependencies).map(async ([key, value]) => {
-              const dependency = await project.configuration.reduceHook(hooks => {
-                return hooks.reduceDependency;
-              }, value, project, pkg, value, {
-                resolver,
-                resolveOptions,
-              });
-
-              const resolvedLocatorHash = project.storedResolutions.get(dependency?.descriptorHash ?? value.descriptorHash)
-              const resolvedPkg = resolvedLocatorHash != null ? project.originalPackages.get(resolvedLocatorHash) :
-                null
-              return {
-                key,
-                name: structUtils.stringifyIdent(value),
-                packageManifestId: structUtils.stringifyIdent(resolvedPkg) + '@' + resolvedPkg.reference,
-              }
-            }))
-
-            const allVisibleDependencies = (await Promise.all(Array.from(pkg.dependencies).map(async ([key, value]) => {
-              // same as dependencies, but in yarn scriptUtils sometimes dependencies get resolved without the reduceDependency hook above,
-              // which can resolve to different dependencies, and then scriptUtils expects those packages to be in the lock file/pnp map,
-              // so we must include them in case they are used.
-              const resolvedLocatorHash = project.storedResolutions.get(value.descriptorHash)
-              const resolvedPkg = resolvedLocatorHash != null ? project.originalPackages.get(resolvedLocatorHash) :
+            const dependencies = (await Promise.all(Array.from(pkg.dependencies).map(async ([key, value]) => {
+              const resolutionHash = project.storedResolutions.get(value.descriptorHash)
+              let resolvedPkg = resolutionHash != null ? project.storedPackages.get(resolutionHash) :
                 null
               if (!resolvedPkg) {
-                console.log('failed to resolve', key, value)
+                console.log('failed to resolve', value)
                 return null
+              }
+              if (structUtils.isVirtualLocator(resolvedPkg)) {
+                resolvedPkg = structUtils.devirtualizeLocator(resolvedPkg)
               }
               return {
                 key,
@@ -510,7 +535,6 @@ const plugin: Plugin<Hooks> = {
 
               // TODO this includes devDependencies, we need to split them out
               dependencies,
-              otherVisibleDependencies: allVisibleDependencies.filter(dep => !dependencies.find(pkg => pkg.packageManifestId === dep.packageManifestId)),
             }
           }
 
@@ -575,7 +599,6 @@ const plugin: Plugin<Hooks> = {
             }
 
             writeDependencies('dependencies', pkg.dependencies)
-            writeDependencies('otherVisibleDependencies', pkg.otherVisibleDependencies)
 
             manifestNix.push(`    };`)
           }

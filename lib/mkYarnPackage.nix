@@ -31,6 +31,9 @@ let
       allPackageData,
       nodejsPackage ? pkgs.nodejs,
       build ? "",
+      buildInputs ? [],
+      postInstallScript ? "",
+      __noChroot ? null,
     }:
     let
       shouldBeUnplugged = if builtins.hasAttr "shouldBeUnplugged" packageManifest then packageManifest.shouldBeUnplugged else false;
@@ -45,7 +48,7 @@ let
       ) else null;
       outputHash = if _platformOutputHash != null then _platformOutputHash else _outputHash;
 
-      willFetch = if src == null then true else false;
+      willFetch = if src == null || (last (splitString "." src)) == "tgz" then true else false;
       willBuild = !willFetch;
       willOutputBeZip = src == null && shouldBeUnplugged == false;
 
@@ -64,8 +67,8 @@ let
         let
           pkgData = packageRegistry."${pkg.name}@${pkg.reference}";
         in
-        if pkgData.drvPath != "/dev/null" then pkgData.drvPath.binDrvPath + "/bin" else null
-      ) packageManifest.dependencies);
+        if pkgData != null && pkgData.drvPath != "/dev/null" then pkgData.drvPath.binDrvPath + "/bin" else null
+      ) (if hasAttr "dependencies" packageManifest then packageManifest.dependencies else {}));
 
       packageRegistryJSON = builtins.toJSON packageRegistry;
 
@@ -98,15 +101,20 @@ let
           (if willFetch then [ "fetchPhase" ] else [ "buildPhase" "packPhase" ]) ++
           (if shouldBeUnplugged then [ "unplugPhase" ] else [ "movePhase" ]);
 
-        outputHashMode = if outputHash != null then (if shouldBeUnplugged then "recursive" else "flat") else null;
-        outputHashAlgo = if outputHash != null then "sha512" else null;
-        outputHash = if outputHash != null then outputHash else null;
+        inherit __noChroot;
+        outputHashMode = if __noChroot != true && outputHash != null then (if shouldBeUnplugged then "recursive" else "flat") else null;
+        outputHashAlgo = if __noChroot != true && outputHash != null then "sha512" else null;
+        outputHash = if __noChroot != true && outputHash != null then outputHash else null;
 
         buildInputs = with pkgs; [
           nodejsPackage
           yarnBerry
           unzip
-        ];
+        ]
+        ++ (if stdenv.isDarwin then [
+          xcbuild
+        ] else [])
+        ++ buildInputs;
 
         fetchPhase =
           if willFetch then ''
@@ -116,7 +124,8 @@ let
             packageLocation=$out/node_modules/${name}
             touch yarn.lock
 
-            yarn nix fetch-by-locator ${locatorJSON} $tmpDir
+            ${if src == null then "yarn nix fetch-by-locator ${locatorJSON} $tmpDir" else
+            "yarn nix convert-to-zip ${locatorJSON} ${src} $tmpDir/output.zip"}
           '' else " ";
 
         buildPhase =
@@ -177,11 +186,20 @@ let
             mkdir -p $out
             unzip -qq -d $out $tmpDir/output.zip
 
+            packageLocation="$out/node_modules/${name}"
+            packageDrvLocation="$out"
             ${if build == "" then createLockFileScript else ""}
 
             yarn nix generate-pnp-file $out $tmpDir/packageRegistryData.json "$packageLocation"
 
+            # create dummy home directory in case any build scripts need it
+            export HOME=$tmpDir/home
+            mkdir -p $HOME
+
             yarn nix run-build-scripts ${locatorHash} $out $packageLocation
+
+            cd $packageLocation
+            ${postInstallScript}
 
             # create a .ready file so the output matches what yarn unplugs itself
             # (useful if we want to be able to generate hash for unplugged output automatically)
@@ -288,6 +306,9 @@ let
       inherit allPackageData;
       src = if hasAttr "src" mergedManifest then mergedManifest.src else null;
       build = if hasAttr "build" mergedManifest then mergedManifest.build else "";
+      buildInputs = if hasAttr "buildInputs" mergedManifest then mergedManifest.buildInputs else [];
+      postInstallScript = if hasAttr "postInstallScript" mergedManifest then mergedManifest.postInstallScript else "";
+      __noChroot = if hasAttr "__noChroot" mergedManifest then mergedManifest.__noChroot else null;
     };
 
   buildPackageDataFromYarnManifest =
@@ -302,7 +323,7 @@ let
         {
           inherit (pkg) name reference linkType;
           manifest = filterAttrs (key: b: !(builtins.elem key [
-            "src" "installCondition" "dependencies" "otherVisibleDependencies"
+            "src" "installCondition" "dependencies"
           ])) pkg;
           drvPath =
             let
@@ -337,7 +358,7 @@ let
           {
             inherit (pkg) name reference linkType;
             manifest = filterAttrs (key: b: !(builtins.elem key [
-              "src" "installCondition" "dependencies" "otherVisibleDependencies"
+              "src" "installCondition" "dependencies"
             ])) pkg;
             drvPath = "/dev/null"; # if package is toplevel package then the location is determined in the buildPhase as it will be $out
             packageDependencies = if (hasAttr "dependencies" pkg && pkg.dependencies != null) then mapAttrs (name: pkg:
@@ -347,8 +368,7 @@ let
       getRecursivePackages = curr: flatten (
         [curr] ++
         (if hasAttr "dependencies" curr && curr.dependencies != null then (mapAttrsToList (__: package: package) curr.dependencies) else []) ++
-        (if hasAttr "dependencies" curr && curr.dependencies != null then (mapAttrsToList (__: package: getRecursivePackages package) curr.dependencies) else []) ++
-        (if hasAttr "otherVisibleDependencies" curr && curr.otherVisibleDependencies != null then (mapAttrsToList (__: package: getRecursivePackages package) curr.otherVisibleDependencies) else [])
+        (if hasAttr "dependencies" curr && curr.dependencies != null then (mapAttrsToList (__: package: getRecursivePackages package) curr.dependencies) else [])
       );
       flattenedPackages = getRecursivePackages topLevel;
       packageRegistryData = listToAttrs (

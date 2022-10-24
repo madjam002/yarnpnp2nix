@@ -25,6 +25,14 @@
                 # e.g
                 # outputHash = "sha512-3TVtFilKcMx170rnF8GfVtyqGUT/FnDcrZwlZX3ChtXrehLUKQwnkNlBnTrTdPBbrUygkkp3PZzH6VZrqsCHVQ==";
               };
+              "canvas@npm:2.10.1" = {
+                __noChroot = true;
+                buildInputs = with channels.nixpkgs; ([
+                  autoconf zlib gcc automake pkg-config libtool file
+                  python3
+                  pixman cairo pango libpng libjpeg giflib librsvg libwebp libuuid
+                ] ++ (if channels.nixpkgs.stdenv.isDarwin then [ darwin.apple_sdk.frameworks.CoreText ] else []));
+              };
               "testa@workspace:packages/testa" = {
                 build = ''
                   echo $PATH
@@ -63,8 +71,14 @@
             };
           };
         images = {
+          testa = channels.nixpkgs.dockerTools.streamLayeredImage {
+            name = "testa";
+            maxLayers = 1000;
+            config.Cmd = "${packages.testa}/bin/testa-test";
+          };
           testb = channels.nixpkgs.dockerTools.streamLayeredImage {
             name = "testb";
+            maxLayers = 1000;
             config.Cmd = "${packages.testb}/bin/testb";
           };
         };

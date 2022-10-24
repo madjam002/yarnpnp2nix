@@ -1,0 +1,10 @@
+{
+  "name": "cross-fetch",
+  "private": true,
+  "version": "1.0.0",
+  "main": "index.js",
+  "license": "UNLICENSED",
+  "dependencies": {
+    "isomorphic-fetch": "^2.2.1"
+  }
+}
