@@ -9,7 +9,10 @@ stdenv.mkDerivation {
 
   phases = [ "getSource" "patchPhase" "build" ];
 
-  patches = [ ./yarnPatches/pnp-nix-store-support.patch ];
+  patches = [
+    ./yarnPatches/pack-specific-project.patch
+    ./yarnPatches/pnp-nix-store-support.patch
+  ];
 
   buildInputs = [
     yarn

@@ -7,6 +7,7 @@ require('test-portal')
 require('next/image')
 require('react-dom')
 require('sharp')
+require('resolve-dir') // resolve-dir has circular package dependencies
 require('test-tgz-redux-saga-core')
 require('testa')
 

@@ -1,10 +1,13 @@
+const { expect } = require('chai')
+
 console.log('testing of package testa')
 
 console.log('nodejs version', process.version)
 
 // console.log(require('react-old'))
 // console.log(require('typescript'))
-console.log(require('react-dom'))
+
+expect(() => require('react-dom')).to.throw(/testa tried to access react-dom/)
 
 module.exports = {
   thisis: 'testa',

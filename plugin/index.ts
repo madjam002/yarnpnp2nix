@@ -73,14 +73,16 @@ const plugin: Plugin<Hooks> = {
           stdout: this.context.stdout,
           includeLogs: !this.context.quiet,
         }, async report => {
-          // await project.install({cache, report});
-
           configuration.values.set('enableMirror', false) // disable global cache as we want to output to outDirectory
 
-          const locator = {
+          let locator = {
             ...(JSON.parse(this.locator)),
             locatorHash: '',
             identHash: '',
+          }
+
+          if (structUtils.isVirtualLocator(locator)) {
+            locator = structUtils.devirtualizeLocator(locator)
           }
 
           const fetchOptions = { checksums: new Map(), project, cache: new Cache(this.outDirectory, { check: false, configuration, immutable: false }), fetcher, report }
@@ -225,12 +227,19 @@ const plugin: Plugin<Hooks> = {
         const pnpFallbackMode = project.configuration.get(`pnpFallbackMode`);
 
         const dependencyTreeRoots = project.workspaces.map(({anchoredLocator}) => ({name: structUtils.stringifyIdent(anchoredLocator), reference: anchoredLocator.reference}));
-        const enableTopLevelFallback = pnpFallbackMode !== `none`;
+        // const enableTopLevelFallback = pnpFallbackMode !== `none`;
+        const enableTopLevelFallback = false;
         const fallbackExclusionList = [];
         const fallbackPool = new Map();
         const ignorePattern = miscUtils.buildIgnorePattern([`.yarn/sdks/**`, ...project.configuration.get(`pnpIgnorePatterns`)]);
         // const packageRegistry = this.packageRegistry;
         const shebang = project.configuration.get(`pnpShebang`);
+
+        if (pnpFallbackMode === `dependencies-only`) {
+          for (const workspace of project.workspaces) {
+            fallbackExclusionList.push({name: structUtils.stringifyIdent(workspace.anchoredLocator), reference: workspace.anchoredLocator.reference});
+          }
+        }
 
         const packageRegistry = new Map()
 
@@ -243,6 +252,13 @@ const plugin: Plugin<Hooks> = {
           if (!pkg) continue
 
           const packageDependencies = new Map()
+          const packagePeers = new Set()
+
+          for (const descriptor of pkg.manifest?.packagePeers ?? []) {
+            packageDependencies.set(descriptor, null);
+            packagePeers.add(descriptor);
+          }
+
           if (pkg.packageDependencies != null) {
             for (const dep of Object.keys(pkg.packageDependencies)) {
               packageDependencies.set(dep, pkg.packageDependencies[dep]);
@@ -253,7 +269,7 @@ const plugin: Plugin<Hooks> = {
             // packageLocation: pkg.packageLocation.startsWith('/nix/store') ? `../../..${pkg.packageLocation}` : pkg.packageLocation,
             packageLocation: pkg.drvPath + '/node_modules/' + pkg.name + '/',
             packageDependencies,
-            // packagePeers,
+            packagePeers,
             linkType: pkg.linkType,
             // discardFromLookup: fetchResult.discardFromLookup || false,
           }
@@ -367,17 +383,23 @@ const plugin: Plugin<Hooks> = {
           const packageManifest: any = {}
 
           for (const [__, pkg] of project.storedPackages) {
-            if (structUtils.isVirtualLocator(pkg)) {
-              continue
-            }
+            // include virtual packages so that peerDependencies work easily
+            const isVirtual = structUtils.isVirtualLocator(pkg)
+            // if (structUtils.isVirtualLocator(pkg)) {
+            //   continue
+            // }
 
-            const linker = linkers.find(linker => linker.supportsPackage(pkg, linkerOptions));
+            const canonicalPackage = isVirtual
+              ? project.storedPackages.get(structUtils.devirtualizeLocator(pkg).locatorHash)
+              : pkg
+
+            const linker = linkers.find(linker => linker.supportsPackage(canonicalPackage, linkerOptions));
             const installer = installers.get(linker)
 
-            let localPath = fetcher.getLocalPath(pkg, fetchOptions)
+            let localPath = fetcher.getLocalPath(canonicalPackage, fetchOptions)
 
             if (!localPath) {
-              const fileParsedSpec = fileUtils.parseSpec(pkg.reference)
+              const fileParsedSpec = fileUtils.parseSpec(canonicalPackage.reference)
               if (fileParsedSpec?.parentLocator != null && fileParsedSpec?.path != null) {
                 const parentLocalPath = fetcher.getLocalPath(fileParsedSpec.parentLocator, fetchOptions)
                 const resolvedPath = path.resolve(parentLocalPath, fileParsedSpec.path)
@@ -445,15 +467,22 @@ const plugin: Plugin<Hooks> = {
                 console.log('failed to resolve', value)
                 return null
               }
-              if (structUtils.isVirtualLocator(resolvedPkg)) {
-                resolvedPkg = structUtils.devirtualizeLocator(resolvedPkg)
-              }
+              // reference virtual packages instead so that peerDependencies are respected
+              // if (structUtils.isVirtualLocator(resolvedPkg)) {
+              //   resolvedPkg = structUtils.devirtualizeLocator(resolvedPkg)
+              // }
               return {
                 key,
                 name: structUtils.stringifyIdent(value),
                 packageManifestId: structUtils.stringifyIdent(resolvedPkg) + '@' + resolvedPkg.reference,
               }
             }))).filter(pkg => !!pkg)
+
+            const packagePeers = []
+
+            for (const descriptor of pkg.peerDependencies.values()) {
+              packagePeers.push(structUtils.stringifyIdent(descriptor));
+            }
 
             const manifestPackageId = structUtils.stringifyIdent(pkg) + '@' + pkg.reference
 
@@ -514,6 +543,8 @@ const plugin: Plugin<Hooks> = {
             const yarnChecksum = project.storedChecksums.get(pkg.locatorHash)
 
             packageManifest[manifestPackageId] = {
+              isVirtual,
+              canonicalPackage,
               name: structUtils.stringifyIdent(pkg),
               reference: pkg.reference,
               locatorHash: pkg.locatorHash,
@@ -535,6 +566,7 @@ const plugin: Plugin<Hooks> = {
 
               // TODO this includes devDependencies, we need to split them out
               dependencies,
+              packagePeers,
             }
           }
 
@@ -556,49 +588,65 @@ const plugin: Plugin<Hooks> = {
             }
           }
 
-          for (const key of Object.keys(packageManifest)) {
+          const alphabeticalKeys =
+            Object.keys(packageManifest).sort((a, b) => a.localeCompare(b))
+
+          for (const key of alphabeticalKeys) {
             const pkg = packageManifest[key]
             manifestNix.push(`    "${key}" = {`)
             manifestNix.push(`      name = ${JSON.stringify(pkg.name)};`)
             manifestNix.push(`      reference = ${JSON.stringify(pkg.reference)};`)
-            manifestNix.push(`      locatorHash = ${JSON.stringify(pkg.locatorHash)};`)
-            manifestNix.push(`      linkType = ${JSON.stringify(pkg.linkType)};`)
-            manifestNix.push(`      outputName = ${JSON.stringify(pkg.outputName)};`)
-            if (pkg.outputHash != null)
-              manifestNix.push(`      outputHash = ${JSON.stringify(pkg.outputHash)};`)
-            if (pkg.outputHashByPlatform && Object.keys(pkg.outputHashByPlatform).length > 0) {
-              manifestNix.push(`      outputHashByPlatform = {`)
-              for (const outputHashByPlatform of Object.keys(pkg.outputHashByPlatform)) {
-                manifestNix.push(`        ${JSON.stringify(outputHashByPlatform)} = ${JSON.stringify(pkg.outputHashByPlatform[outputHashByPlatform])};`)
-              }
-              manifestNix.push(`      };`)
+            if (pkg.isVirtual && pkg.canonicalPackage != null) {
+              manifestNix.push(`      canonicalPackage = packages.${JSON.stringify(`${structUtils.stringifyIdent(pkg.canonicalPackage)}@${pkg.canonicalPackage.reference}`)};`)
             }
-            if (pkg.src)
-              manifestNix.push(`      src = ${pkg.src};`)
-            if (pkg.shouldBeUnplugged)
-              manifestNix.push(`      shouldBeUnplugged = ${pkg.shouldBeUnplugged};`)
-            if (pkg.installCondition)
-              manifestNix.push(`      installCondition = ${pkg.installCondition};`)
-
-            // other things necessary for recreating lock file that we don't necessarily use
-            manifestNix.push(`      flatName = ${JSON.stringify(pkg.flatName)};`)
-            manifestNix.push(`      descriptorHash = ${JSON.stringify(pkg.descriptor.descriptorHash)};`)
-            manifestNix.push(`      languageName = ${JSON.stringify(pkg.languageName)};`)
-            manifestNix.push(`      scope = ${JSON.stringify(pkg.scope)};`)
-            manifestNix.push(`      descriptorRange = ${JSON.stringify(pkg.descriptor.range)};`)
-            manifestNix.push(`      descriptorIdentHash = ${JSON.stringify(pkg.descriptor.identHash)};`)
-            if (pkg.checksum)
-              manifestNix.push(`      checksum = ${JSON.stringify(pkg.checksum)};`)
-
-            if (pkg.bin && Object.keys(pkg.bin).length > 0) {
-              manifestNix.push(`      bin = {`)
-              for (const bin of Object.keys(pkg.bin)) {
-                manifestNix.push(`        ${JSON.stringify(bin)} = ${JSON.stringify(pkg.bin[bin])};`)
+            if (!pkg.isVirtual) {
+              manifestNix.push(`      locatorHash = ${JSON.stringify(pkg.locatorHash)};`)
+              manifestNix.push(`      linkType = ${JSON.stringify(pkg.linkType)};`)
+              manifestNix.push(`      outputName = ${JSON.stringify(pkg.outputName)};`)
+              if (pkg.outputHash != null)
+                manifestNix.push(`      outputHash = ${JSON.stringify(pkg.outputHash)};`)
+              if (pkg.outputHashByPlatform && Object.keys(pkg.outputHashByPlatform).length > 0) {
+                manifestNix.push(`      outputHashByPlatform = {`)
+                for (const outputHashByPlatform of Object.keys(pkg.outputHashByPlatform)) {
+                  manifestNix.push(`        ${JSON.stringify(outputHashByPlatform)} = ${JSON.stringify(pkg.outputHashByPlatform[outputHashByPlatform])};`)
+                }
+                manifestNix.push(`      };`)
               }
-              manifestNix.push(`      };`)
+              if (pkg.src)
+                manifestNix.push(`      src = ${pkg.src};`)
+              if (pkg.shouldBeUnplugged)
+                manifestNix.push(`      shouldBeUnplugged = ${pkg.shouldBeUnplugged};`)
+              if (pkg.installCondition)
+                manifestNix.push(`      installCondition = ${pkg.installCondition};`)
+
+              // other things necessary for recreating lock file that we don't necessarily use
+              manifestNix.push(`      flatName = ${JSON.stringify(pkg.flatName)};`)
+              manifestNix.push(`      descriptorHash = ${JSON.stringify(pkg.descriptor.descriptorHash)};`)
+              manifestNix.push(`      languageName = ${JSON.stringify(pkg.languageName)};`)
+              manifestNix.push(`      scope = ${JSON.stringify(pkg.scope)};`)
+              manifestNix.push(`      descriptorRange = ${JSON.stringify(pkg.descriptor.range)};`)
+              manifestNix.push(`      descriptorIdentHash = ${JSON.stringify(pkg.descriptor.identHash)};`)
+              if (pkg.checksum)
+                manifestNix.push(`      checksum = ${JSON.stringify(pkg.checksum)};`)
+
+              if (pkg.bin && Object.keys(pkg.bin).length > 0) {
+                manifestNix.push(`      bin = {`)
+                for (const bin of Object.keys(pkg.bin)) {
+                  manifestNix.push(`        ${JSON.stringify(bin)} = ${JSON.stringify(pkg.bin[bin])};`)
+                }
+                manifestNix.push(`      };`)
+              }
             }
 
             writeDependencies('dependencies', pkg.dependencies)
+
+            if (!pkg.isVirtual && pkg.packagePeers && pkg.packagePeers.length > 0) {
+              manifestNix.push(`      packagePeers = [`)
+              for (const peer of pkg.packagePeers) {
+                manifestNix.push(`        ${JSON.stringify(peer)}`)
+              }
+              manifestNix.push(`      ];`)
+            }
 
             manifestNix.push(`    };`)
           }
@@ -611,10 +659,17 @@ const plugin: Plugin<Hooks> = {
           fs.writeFileSync(path.join(project.cwd, 'yarn-manifest.nix'), manifestNix.join('\n'), 'utf8')
         },
         populateYarnPaths: async (project: Project) => {
-          if (process.env.YARNNIX_PACK_DIRECTORY != null) {
-            const rootWorkspace = project.workspacesByCwd.get(project.cwd)
-            if (rootWorkspace != null) {
-              rootWorkspace.cwd = process.env.YARNNIX_PACK_DIRECTORY
+          const packageRegistryDataPath = process.env.YARNNIX_PACKAGE_REGISTRY_DATA_PATH
+          if (!!packageRegistryDataPath) {
+            const packageRegistryData = JSON.parse(fs.readFileSync(packageRegistryDataPath, 'utf8'))
+            const packageRegistryPackages: any[] = Object.values(packageRegistryData).filter(pkg => !!pkg?.manifest)
+
+            for (const pkg of packageRegistryPackages) {
+              if (pkg.manifest.reference.startsWith('workspace:')) {
+                if (pkg.drvPath !== process.env.out) {
+                  await project.addWorkspace(path.join(pkg.drvPath, 'node_modules', pkg.manifest.name))
+                }
+              }
             }
           }
         },

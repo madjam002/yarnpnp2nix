@@ -1,7 +1,7 @@
 {
   "name": "testa",
   "version": "0.0.0",
-  "main": "index.js",
+  "main": "blah.js",
   "scripts": {
     "install": "node build.js",
     "build": "node build.js"
@@ -10,6 +10,7 @@
     "testa-test": "./bin/testa-test"
   },
   "dependencies": {
+    "chai": "^4.3.6",
     "color": "^4.2.3",
     "esbuild": "^0.15.10",
     "react-old": "npm:react@^18.2.0"

@@ -9,6 +9,11 @@ let
     export YARN_PLUGINS=${nixPlugin}
   '';
 
+  resolvePkg = pkg: if hasAttr "canonicalPackage" pkg then (
+    pkg.canonicalPackage //
+    (if hasAttr "dependencies" pkg then { inherit (pkg) dependencies; } else {})
+   ) else pkg;
+
   mkYarnPackageFromManifest =
     {
       package,
@@ -67,7 +72,7 @@ let
         let
           pkgData = packageRegistry."${pkg.name}@${pkg.reference}";
         in
-        if pkgData != null && pkgData.drvPath != "/dev/null" then pkgData.drvPath.binDrvPath + "/bin" else null
+        if pkgData != null && pkgData.drvPath != "/dev/null" && hasAttr "bin" pkgData.manifest then pkgData.drvPath.binDrvPath + "/bin" else null
       ) (if hasAttr "dependencies" packageManifest then packageManifest.dependencies else {}));
 
       packageRegistryJSON = builtins.toJSON packageRegistry;
@@ -172,6 +177,9 @@ let
             packageLocation="$out/node_modules/${name}"
             packageDrvLocation="$out"
 
+            if [ -f "$tmpDir/packageRegistryData.json" ]; then
+              export YARNNIX_PACKAGE_REGISTRY_DATA_PATH="$tmpDir/packageRegistryData.json"
+            fi
             yarn pack -o $tmpDir/package.tgz
             yarn nix convert-to-zip ${locatorJSON} $tmpDir/package.tgz $tmpDir/output.zip
 
@@ -295,7 +303,9 @@ let
     }:
     let
       packageManifest = yarnManifest."${package}";
-      nameAndRef = "${packageManifest.name}@${packageManifest.reference}";
+      nameAndRef = if hasAttr "canonicalPackage" packageManifest then
+        throw "mkYarnPackageFromManifest cannot be called with virtual package"
+      else "${packageManifest.name}@${packageManifest.reference}";
       mergedManifest =
         packageManifest //
         (if hasAttr nameAndRef packageOverrides then packageOverrides."${nameAndRef}" else {});
@@ -318,25 +328,29 @@ let
     }:
     let
       getPackageDataForPackage = pkg:
-        if hasAttr "installCondition" pkg && pkg.installCondition != null && (pkg.installCondition pkgs.stdenv) == false then null
+        let
+          resolvedPkg = resolvePkg pkg;
+        in
+        if hasAttr "installCondition" resolvedPkg && resolvedPkg.installCondition != null && (resolvedPkg.installCondition pkgs.stdenv) == false then null
         else
         {
-          inherit (pkg) name reference linkType;
+          inherit (pkg) name reference;
+          inherit (resolvedPkg) linkType;
           manifest = filterAttrs (key: b: !(builtins.elem key [
             "src" "installCondition" "dependencies"
-          ])) pkg;
+          ])) resolvedPkg;
           drvPath =
             let
               drv = (mkYarnPackageFromManifest_internal {
                 inherit yarnManifest;
-                package = "${pkg.name}@${pkg.reference}";
+                package = "${resolvedPkg.name}@${resolvedPkg.reference}";
                 inherit packageOverrides;
                 inherit allPackageData;
               });
             in
             drv.package // { binDrvPath = drv; };
-          packageDependencies = if (hasAttr "dependencies" pkg && pkg.dependencies != null) then mapAttrs (name: pkg:
-            [ pkg.name pkg.reference ]
+          packageDependencies = if (hasAttr "dependencies" pkg && pkg.dependencies != null) then mapAttrs (name: depPkg:
+            [ depPkg.name depPkg.reference ]
           ) pkg.dependencies else [];
         };
 
@@ -352,7 +366,9 @@ let
     }:
     let
       getPackageDataForPackage = pkg:
-        if pkg != topLevel then allPackageData."${pkg.name}@${pkg.reference}" else (
+        if pkg != topLevel then (
+          allPackageData."${pkg.name}@${pkg.reference}"
+        ) else (
           if hasAttr "installCondition" pkg && pkg.installCondition != null && (pkg.installCondition pkgs.stdenv) == false then null
           else
           {
@@ -361,16 +377,22 @@ let
               "src" "installCondition" "dependencies"
             ])) pkg;
             drvPath = "/dev/null"; # if package is toplevel package then the location is determined in the buildPhase as it will be $out
-            packageDependencies = if (hasAttr "dependencies" pkg && pkg.dependencies != null) then mapAttrs (name: pkg:
-              [ pkg.name pkg.reference ]
+            packageDependencies = if (hasAttr "dependencies" pkg && pkg.dependencies != null) then mapAttrs (name: depPkg:
+              [ depPkg.name depPkg.reference ]
             ) pkg.dependencies else [];
-          });
-      getRecursivePackages = curr: flatten (
-        [curr] ++
-        (if hasAttr "dependencies" curr && curr.dependencies != null then (mapAttrsToList (__: package: package) curr.dependencies) else []) ++
-        (if hasAttr "dependencies" curr && curr.dependencies != null then (mapAttrsToList (__: package: getRecursivePackages package) curr.dependencies) else [])
-      );
-      flattenedPackages = getRecursivePackages topLevel;
+          }
+        );
+      getRecursivePackages = curr: dependencyStack:
+        let
+          nextDependencyStack = dependencyStack ++ [ "${curr.name}@${curr.reference}" ];
+          isInCircularDependency = (length nextDependencyStack) > (length (unique nextDependencyStack));
+        in
+        flatten (
+          [curr] ++
+          (if hasAttr "dependencies" curr && curr.dependencies != null then (mapAttrsToList (__: package: package) curr.dependencies) else []) ++
+          (if !isInCircularDependency && hasAttr "dependencies" curr && curr.dependencies != null then (mapAttrsToList (__: package: getRecursivePackages package nextDependencyStack) curr.dependencies) else [])
+        );
+      flattenedPackages = getRecursivePackages topLevel [];
       packageRegistryData = listToAttrs (
         map (pkg: {
           name = "${pkg.name}@${pkg.reference}";
@@ -378,7 +400,6 @@ let
         }) flattenedPackages
       );
     in
-    # builtins.trace "calculating for ${topLevel.name}" packageRegistryData;
     packageRegistryData;
 in
 {
