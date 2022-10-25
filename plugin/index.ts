@@ -49,7 +49,7 @@ const plugin: Plugin<Hooks> = {
   factory: require => {
     const { Configuration, Project, Cache, StreamReport, Manifest, tgzUtils, structUtils, miscUtils, scriptUtils } = require("@yarnpkg/core")
     const { BaseCommand } = require('@yarnpkg/cli')
-    const { xfs, CwdFS, PortablePath } = require('@yarnpkg/fslib')
+    const { xfs, CwdFS, PortablePath, VirtualFS } = require('@yarnpkg/fslib')
     const { ZipOpenFS } = require('@yarnpkg/libzip')
     const { getPnpPath, pnpUtils } = require('@yarnpkg/plugin-pnp')
     const { fileUtils } = require('@yarnpkg/plugin-file')
@@ -226,20 +226,11 @@ const plugin: Plugin<Hooks> = {
 
         const pnpFallbackMode = project.configuration.get(`pnpFallbackMode`);
 
-        const dependencyTreeRoots = project.workspaces.map(({anchoredLocator}) => ({name: structUtils.stringifyIdent(anchoredLocator), reference: anchoredLocator.reference}));
-        // const enableTopLevelFallback = pnpFallbackMode !== `none`;
-        const enableTopLevelFallback = false;
-        const fallbackExclusionList = [];
+        const dependencyTreeRoots = [] //project.workspaces.map(({anchoredLocator}) => ({name: structUtils.stringifyIdent(anchoredLocator), reference: anchoredLocator.reference}));
+        const enableTopLevelFallback = pnpFallbackMode !== `none`;
         const fallbackPool = new Map();
         const ignorePattern = miscUtils.buildIgnorePattern([`.yarn/sdks/**`, ...project.configuration.get(`pnpIgnorePatterns`)]);
-        // const packageRegistry = this.packageRegistry;
         const shebang = project.configuration.get(`pnpShebang`);
-
-        if (pnpFallbackMode === `dependencies-only`) {
-          for (const workspace of project.workspaces) {
-            fallbackExclusionList.push({name: structUtils.stringifyIdent(workspace.anchoredLocator), reference: workspace.anchoredLocator.reference});
-          }
-        }
 
         const packageRegistry = new Map()
 
@@ -250,6 +241,15 @@ const plugin: Plugin<Hooks> = {
         for (const pkgIdent of Object.keys(packageRegistryData)) {
           const pkg = packageRegistryData[pkgIdent]
           if (!pkg) continue
+
+          const locator = {
+            name: pkg.manifest.flatName,
+            scope: pkg.manifest.scope,
+            reference: pkg.manifest.reference,
+            locatorHash: pkg.manifest.locatorHash,
+          }
+
+          const isVirtual = structUtils.isVirtualLocator(pkg);
 
           const packageDependencies = new Map()
           const packagePeers = new Set()
@@ -265,9 +265,16 @@ const plugin: Plugin<Hooks> = {
             }
           }
 
+          const packageLocationAbs = pkg.drvPath + '/node_modules/' + pkg.name
+          const relativePackageLocation = path.relative(this.outDirectory, packageLocationAbs)
+          let packageLocation = (relativePackageLocation.startsWith('../') ? relativePackageLocation : ('./' + relativePackageLocation)) + '/'
+
+          if (isVirtual) {
+            packageLocation = './' + VirtualFS.makeVirtualPath('./.yarn/__virtual__', structUtils.slugifyLocator(locator), relativePackageLocation) + '/'
+          }
+
           const packageData = {
-            // packageLocation: pkg.packageLocation.startsWith('/nix/store') ? `../../..${pkg.packageLocation}` : pkg.packageLocation,
-            packageLocation: pkg.drvPath + '/node_modules/' + pkg.name + '/',
+            packageLocation,
             packageDependencies,
             packagePeers,
             linkType: pkg.linkType,
@@ -276,7 +283,14 @@ const plugin: Plugin<Hooks> = {
 
           miscUtils.getMapWithDefault(packageRegistry, pkg.name).set(pkg.reference, packageData);
 
-          if (packageData.packageLocation.startsWith(this.topLevelPackageDirectory)) {
+          if (locator.reference.startsWith('workspace:')) {
+            dependencyTreeRoots.push({
+              name: structUtils.stringifyIdent(locator),
+              reference: locator.reference,
+            })
+          }
+
+          if (packageLocationAbs.includes(this.topLevelPackageDirectory)) {
             topLevelPackage = packageData
           }
         }
@@ -290,7 +304,7 @@ const plugin: Plugin<Hooks> = {
         const pnpSettings = {
           dependencyTreeRoots,
           enableTopLevelFallback,
-          fallbackExclusionList,
+          fallbackExclusionList: pnpFallbackMode === `dependencies-only` ? dependencyTreeRoots : [],
           fallbackPool,
           ignorePattern,
           packageRegistry,

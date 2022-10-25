@@ -22,4 +22,16 @@ ctx.lineTo(50, 102)
 ctx.lineTo(50 + text.width, 102)
 ctx.stroke()
 
+// test knex + pg to see if peer dependencies are working properly
+const knex = require('knex')({
+  client: 'pg',
+  connection: {
+    host: '127.0.0.1',
+  },
+})
+
+require('pg')
+knex('test')
+console.log('Knex successfully included')
+
 console.log('Imported all packages successfully')

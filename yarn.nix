@@ -11,7 +11,6 @@ stdenv.mkDerivation {
 
   patches = [
     ./yarnPatches/pack-specific-project.patch
-    ./yarnPatches/pnp-nix-store-support.patch
   ];
 
   buildInputs = [
@@ -30,11 +29,9 @@ stdenv.mkDerivation {
 
   build = ''
     yarn build:cli
-    yarn build:compile packages/yarnpkg-pnp
     (cd packages/yarnpkg-pnp && yarn pack -o package.tgz)
     mkdir -p $out/bin $out/packages
     mv packages/yarnpkg-cli/bundles/yarn.js $out/bin/yarn
-    mv packages/yarnpkg-pnp/package.tgz $out/packages/yarnpkg-pnp.tgz
     chmod +x $out/bin/yarn
     patchShebangs $out/bin/yarn
   '';

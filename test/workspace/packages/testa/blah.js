@@ -7,7 +7,7 @@ console.log('nodejs version', process.version)
 // console.log(require('react-old'))
 // console.log(require('typescript'))
 
-expect(() => require('react-dom')).to.throw(/testa tried to access react-dom/)
+expect(() => require('react-dom')).to.throw()
 
 module.exports = {
   thisis: 'testa',

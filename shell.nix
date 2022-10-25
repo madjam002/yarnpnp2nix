@@ -9,6 +9,5 @@ mkShell {
   ];
 
   shellHook = ''
-    ln -sf ${yarnBerry}/packages/yarnpkg-pnp.tgz plugin/yarnpkg-pnp.tgz
   '';
 }

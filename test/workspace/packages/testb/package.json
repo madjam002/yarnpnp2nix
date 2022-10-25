@@ -5,6 +5,8 @@
   "dependencies": {
     "canvas": "^2.10.1",
     "fsevents": "^2.3.2",
+    "knex": "^2.3.0",
+    "pg": "^8.8.0",
     "react": "npm:react@^18.2.0",
     "react-dom": "^18.2.0",
     "react-scheduler": "^0.1.0",

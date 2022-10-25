@@ -54,13 +54,13 @@ __metadata:
   linkType: hard
 
 "@types/node@npm:^18.7.6":
-  version: 18.11.3
-  resolution: "@types/node@npm:18.11.3"
-  checksum: a5764e83c872478f994bbc93807640db0d1ed6da7e9d55d18a9610691a89f169722414d480c44388550945b3c16a838f5e3e94de28207cc0616f12dba70edb96
+  version: 18.11.5
+  resolution: "@types/node@npm:18.11.5"
+  checksum: 6a2d877520bf66640365f507b8eab8039bf8edb46ca94c8fb01a20074837af7cb8042194bb8b89771f3c7dec254860bf421fa058fa2e2d239372056aa421c6ee
   languageName: node
   linkType: hard
 
-"@yarnpkg/fslib@npm:^3.0.0-rc.25":
+"@yarnpkg/fslib@npm:^3.0.0-rc.26":
   version: 3.0.0-rc.26
   resolution: "@yarnpkg/fslib@npm:3.0.0-rc.26"
   dependencies:
@@ -69,13 +69,13 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@yarnpkg/pnp@file:./yarnpkg-pnp.tgz::locator=yarn-plugin-yarnpnp2nix%40workspace%3A.":
-  version: 4.0.0-rc.25
-  resolution: "@yarnpkg/pnp@file:./yarnpkg-pnp.tgz::locator=yarn-plugin-yarnpnp2nix%40workspace%3A."
+"@yarnpkg/pnp@npm:^4.0.0-rc.25":
+  version: 4.0.0-rc.26
+  resolution: "@yarnpkg/pnp@npm:4.0.0-rc.26"
   dependencies:
     "@types/node": "npm:^18.7.6"
-    "@yarnpkg/fslib": "npm:^3.0.0-rc.25"
-  checksum: 8c1d64b47a1bdaa1e8c8da961c2d51e5d739a9fe5273a1ffe04eb0fba57968fda6f292e0c016e8fcdf1970c156dfb3c209e89462a15aefda5a712064a464ce32
+    "@yarnpkg/fslib": "npm:^3.0.0-rc.26"
+  checksum: 4b3e2896d08f977d17fa5619a389b95332594a7e9d564f434691b937aa507580b9db098e1dbd8b48aba302ff1303fd6d8ecc15884eca11f6ee5d883657c2a450
   languageName: node
   linkType: hard
 
@@ -1527,7 +1527,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "yarn-plugin-yarnpnp2nix@workspace:."
   dependencies:
-    "@yarnpkg/pnp": ./yarnpkg-pnp.tgz
+    "@yarnpkg/pnp": "npm:^4.0.0-rc.25"
     esbuild: "npm:^0.15.10"
     execa: "npm:^6.1.0"
     nodemon: "npm:^2.0.20"
