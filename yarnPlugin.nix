@@ -6,6 +6,6 @@ stdenv.mkDerivation {
 
   build = ''
     mkdir -p $out
-    cp ${./plugin/dist/index.js} $out/plugin.js
+    cp ${./plugin/dist/plugin-yarnpnp2nix.js} $out/plugin.js
   '';
 }
