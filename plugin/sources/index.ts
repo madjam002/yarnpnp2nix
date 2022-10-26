@@ -115,7 +115,7 @@ class CreateLockFileCommand extends BaseCommand {
     const packageRegistryPackages: any[] = Object.values(packageRegistryData).filter(pkg => !!pkg?.manifest)
 
     for (const _package of packageRegistryPackages) {
-      const pkg = _package.manifest
+      const pkg = Object.assign({}, _package.manifest, { name: _package.name, reference: _package.reference })
       //  {
       //   identHash: '9ca470fa61f45e067b8912c4342a3400ef0a72ba40cc23c2c0b328fe2213be1f145c35685252f614b708022def6c86380b66b07686cf36dd332caae8d849136f',
       //   scope: null,
@@ -136,12 +136,17 @@ class CreateLockFileCommand extends BaseCommand {
       const dependencies = new Map()
       const bin = new Map(Object.entries(pkg.bin ?? {}))
 
+      const ident = structUtils.makeIdent(pkg.scope, pkg.flatName)
+      const locator = structUtils.makeLocator(ident, pkg.reference)
+      const descriptor = structUtils.makeDescriptor(ident, pkg.descriptorRange)
+
+      pkg.locatorHash = locator.locatorHash
+      pkg.descriptorHash = descriptor.descriptorHash
+      _package.manifest.locatorHash = locator.locatorHash
+      _package.manifest.descriptorHash = descriptor.descriptorHash
+
       const origPackage = {
-        identHash: pkg.descriptorIdentHash,
-        scope: pkg.scope,
-        name: pkg.flatName,
-        locatorHash: pkg.locatorHash,
-        reference: pkg.reference,
+        ...locator,
         languageName: pkg.languageName,
         linkType: pkg.linkType,
         conditions: null,
@@ -156,13 +161,6 @@ class CreateLockFileCommand extends BaseCommand {
       // storedChecksums is a map of locatorHash -> checksum
       if (pkg.checksum != null) project.storedChecksums.set(pkg.locatorHash, pkg.checksum)
 
-      const descriptor = {
-        identHash: pkg.descriptorIdentHash,
-        scope: pkg.scope,
-        name: pkg.flatName,
-        descriptorHash: pkg.descriptorHash,
-        range: pkg.descriptorRange,
-      }
       project.storedDescriptors.set(pkg.descriptorHash, descriptor)
     }
 
@@ -174,7 +172,7 @@ class CreateLockFileCommand extends BaseCommand {
 
       for (const dependencyName of Object.keys(pkgDependencies)) {
         const [depPkgName, depPkgReference] = pkgDependencies[dependencyName]
-        const depPkg = packageRegistryPackages.find(pkg => pkg?.manifest?.name === depPkgName && pkg?.manifest?.reference === depPkgReference)
+        const depPkg = packageRegistryPackages.find(pkg => pkg?.name === depPkgName && pkg?.reference === depPkgReference)
         if (depPkg?.manifest?.descriptorHash != null) {
           const depPkgDescriptor = project.storedDescriptors.get(depPkg.manifest.descriptorHash)
           if (depPkgDescriptor != null) {
@@ -201,7 +199,6 @@ class ConvertToZipCommand extends BaseCommand {
     const configuration = await Configuration.find(process.cwd(), this.context.plugins);
     const {project, workspace} = await Project.find(configuration, process.cwd());
 
-    // const locator = project.originalPackages.get(this.locator)
     const locator = {
       ...(JSON.parse(this.locator)),
       locatorHash: '',
@@ -248,12 +245,8 @@ class GeneratePnpFile extends BaseCommand {
       const pkg = packageRegistryData[pkgIdent]
       if (!pkg) continue
 
-      const locator = {
-        name: pkg.manifest.flatName,
-        scope: pkg.manifest.scope,
-        reference: pkg.manifest.reference,
-        locatorHash: pkg.manifest.locatorHash,
-      }
+      const ident = structUtils.makeIdent(pkg.manifest.scope, pkg.manifest.flatName)
+      const locator = structUtils.makeLocator(ident, pkg.reference)
 
       const isVirtual = structUtils.isVirtualLocator(pkg);
 
@@ -337,7 +330,11 @@ class RunBuildScriptsCommand extends BaseCommand {
     const configuration = await Configuration.find(process.cwd(), this.context.plugins);
     const {project, workspace} = await Project.find(configuration, process.cwd());
 
-    const pkg = project.originalPackages.get(this.locator)
+    const _locator = JSON.parse(this.locator)
+    const ident = structUtils.makeIdent(_locator.scope, _locator.name)
+    const locator = structUtils.makeLocator(ident, _locator.reference)
+
+    const pkg = project.originalPackages.get(locator.locatorHash)
 
     project.cwd = this.pnpRootDirectory
 
@@ -567,7 +564,6 @@ export default {
           canonicalPackage,
           name: structUtils.stringifyIdent(pkg),
           reference: pkg.reference,
-          locatorHash: pkg.locatorHash,
           linkType: pkg.linkType, // HARD package links are the most common, and mean that the target location is fully owned by the package manager. SOFT links, on the other hand, typically point to arbitrary user-defined locations on disk.
           outputName: [structUtils.stringifyIdent(pkg), pkg.version, pkg.locatorHash.substring(0, 10)].filter(part => !!part).join('-').replace(/@/g, '').replace(/[\/]/g, '-'),
           outputHash,
@@ -620,7 +616,6 @@ export default {
           manifestNix.push(`      canonicalPackage = packages.${JSON.stringify(`${structUtils.stringifyIdent(pkg.canonicalPackage)}@${pkg.canonicalPackage.reference}`)};`)
         }
         if (!pkg.isVirtual) {
-          manifestNix.push(`      locatorHash = ${JSON.stringify(pkg.locatorHash)};`)
           manifestNix.push(`      linkType = ${JSON.stringify(pkg.linkType)};`)
           manifestNix.push(`      outputName = ${JSON.stringify(pkg.outputName)};`)
           if (pkg.outputHash != null)
@@ -641,11 +636,9 @@ export default {
 
           // other things necessary for recreating lock file that we don't necessarily use
           manifestNix.push(`      flatName = ${JSON.stringify(pkg.flatName)};`)
-          manifestNix.push(`      descriptorHash = ${JSON.stringify(pkg.descriptor.descriptorHash)};`)
           manifestNix.push(`      languageName = ${JSON.stringify(pkg.languageName)};`)
           manifestNix.push(`      scope = ${JSON.stringify(pkg.scope)};`)
           manifestNix.push(`      descriptorRange = ${JSON.stringify(pkg.descriptor.range)};`)
-          manifestNix.push(`      descriptorIdentHash = ${JSON.stringify(pkg.descriptor.identHash)};`)
           if (pkg.checksum)
             manifestNix.push(`      checksum = ${JSON.stringify(pkg.checksum)};`)
 
@@ -685,9 +678,9 @@ export default {
         const packageRegistryPackages: any[] = Object.values(packageRegistryData).filter(pkg => !!pkg?.manifest)
 
         for (const pkg of packageRegistryPackages) {
-          if (pkg.manifest.reference.startsWith('workspace:')) {
+          if (pkg.reference.startsWith('workspace:')) {
             if (pkg.drvPath !== process.env.out) {
-              await project.addWorkspace(path.join(pkg.drvPath, 'node_modules', pkg.manifest.name))
+              await project.addWorkspace(path.join(pkg.drvPath, 'node_modules', pkg.name))
             }
           }
         }

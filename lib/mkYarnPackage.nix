@@ -46,8 +46,7 @@ let
     }:
     let
       shouldBeUnplugged = if builtins.hasAttr "shouldBeUnplugged" packageManifest then packageManifest.shouldBeUnplugged else false;
-      locatorHash = packageManifest.locatorHash;
-      ident = "${name}@${reference}";
+      locatorString = "${name}@${reference}";
       reference = packageManifest.reference;
       bin = if builtins.hasAttr "bin" packageManifest && packageManifest.bin != null then packageManifest.bin else null;
 
@@ -107,8 +106,8 @@ let
       createLockFileScript = builtins.appendContext ''
         cat ${packageRegistryFile} | ${pkgs.jq}/bin/jq -rcM \
           --arg drvPath "$packageDrvLocation" \
-          --arg ident ${builtins.toJSON ("${ident}")} \
-          '.[$ident].drvPath = $drvPath' > $tmpDir/packageRegistryData.json
+          --arg locatorString ${builtins.toJSON ("${locatorString}")} \
+          '.[$locatorString].drvPath = $drvPath' > $tmpDir/packageRegistryData.json
 
         yarn nix create-lockfile $tmpDir/packageRegistryData.json
       '' packageRegistryContext;
@@ -218,7 +217,7 @@ let
             export HOME=$tmpDir/home
             mkdir -p $HOME
 
-            yarn nix run-build-scripts ${locatorHash} $out $packageLocation
+            yarn nix run-build-scripts ${locatorJSON} $out $packageLocation
 
             cd $packageLocation
             ${postInstallScript}
@@ -349,7 +348,7 @@ let
           inherit (pkg) name reference;
           inherit (resolvedPkg) linkType;
           manifest = filterAttrs (key: b: !(builtins.elem key [
-            "src" "installCondition" "dependencies"
+            "src" "installCondition" "dependencies" "name" "reference"
           ])) resolvedPkg;
           drv = mkYarnPackageFromManifest_internal {
             inherit yarnManifest;
