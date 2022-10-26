@@ -14,7 +14,11 @@
       outputsBuilder = channels: rec {
         packages =
           let
-            mkYarnPackageFromManifest = yarnpnp2nix.lib."${channels.nixpkgs.stdenv.system}".mkYarnPackageFromManifest;
+            mkYarnPackagesFromManifest = yarnpnp2nix.lib."${channels.nixpkgs.stdenv.system}".mkYarnPackagesFromManifest;
+            yarnPackages = mkYarnPackagesFromManifest {
+              yarnManifest = import ./workspace/yarn-manifest.nix;
+              inherit packageOverrides;
+            };
             packageOverrides = {
               "esbuild@npm:0.15.10" = {
                 # e.g
@@ -33,6 +37,9 @@
                   pixman cairo pango libpng libjpeg giflib librsvg libwebp libuuid
                 ] ++ (if channels.nixpkgs.stdenv.isDarwin then [ darwin.apple_sdk.frameworks.CoreText ] else []));
               };
+              "sharp@npm:0.31.1" = {
+                outputHashByPlatform."x86_64-linux" = "sha512-jirTC3XTIyBYEe1l9IgSr8S4zkkl6YvRNaqeQk1itXmbibRfk0KxziApSAmNByf+y0Z9vmMPmnJpr6OE3PODOg==";
+              };
               "testa@workspace:packages/testa" = {
                 build = ''
                   echo $PATH
@@ -49,26 +56,10 @@
           {
             pkgs = channels.nixpkgs;
             yarn-plugin = yarnpnp2nix.packages."${channels.nixpkgs.stdenv.system}".yarn-plugin;
-            react = mkYarnPackageFromManifest {
-              yarnManifest = import ./workspace/yarn-manifest.nix;
-              package = "react@npm:18.2.0";
-              inherit packageOverrides;
-            };
-            esbuild = mkYarnPackageFromManifest {
-              yarnManifest = import ./workspace/yarn-manifest.nix;
-              package = "esbuild@npm:0.15.10";
-              inherit packageOverrides;
-            };
-            testa = mkYarnPackageFromManifest {
-              yarnManifest = import ./workspace/yarn-manifest.nix;
-              package = "testa@workspace:packages/testa";
-              inherit packageOverrides;
-            };
-            testb = mkYarnPackageFromManifest {
-              yarnManifest = import ./workspace/yarn-manifest.nix;
-              package = "testb@workspace:packages/testb";
-              inherit packageOverrides;
-            };
+            react = yarnPackages."react@npm:18.2.0";
+            esbuild = yarnPackages."esbuild@npm:0.15.10";
+            testa = yarnPackages."testa@workspace:packages/testa";
+            testb = yarnPackages."testb@workspace:packages/testb";
           };
         images = {
           testa = channels.nixpkgs.dockerTools.streamLayeredImage {

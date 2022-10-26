@@ -1,0 +1,7 @@
+{
+  "name": "teste",
+  "version": "0.0.0",
+  "dependencies": {
+    "jest": "^29.2.2"
+  }
+}

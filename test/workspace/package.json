@@ -5,5 +5,8 @@
   ],
   "dependencies": {
     "esbuild": "^0.15.10"
+  },
+  "resolutions": {
+    "open": "patch:open@npm:8.4.0#.yarn/patches/open-npm-8.4.0-df63cfe537"
   }
 }

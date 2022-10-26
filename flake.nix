@@ -23,7 +23,7 @@
             yarn-plugin = channels.nixpkgs.callPackage ./yarnPlugin.nix {};
           };
           lib = {
-            mkYarnPackageFromManifest = (import ./lib/mkYarnPackage.nix { pkgs = channels.nixpkgs; lib = channels.nixpkgs.lib; }).mkYarnPackageFromManifest;
+            mkYarnPackagesFromManifest = (import ./lib/mkYarnPackage.nix { pkgs = channels.nixpkgs; lib = channels.nixpkgs.lib; }).mkYarnPackagesFromManifest;
           };
           devShell = import ./shell.nix {
             pkgs = channels.nixpkgs;

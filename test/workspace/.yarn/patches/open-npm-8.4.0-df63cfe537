@@ -1,0 +1,35 @@
+diff --git a/index.js b/index.js
+index 290b4ec0003c65955e4853c861051228bd71575a..2658dffeb2dbdc555d926a6757488980efda4ea5 100644
+--- a/index.js
++++ b/index.js
+@@ -5,9 +5,6 @@ const isWsl = require('is-wsl');
+ const isDocker = require('is-docker');
+ const defineLazyProperty = require('define-lazy-prop');
+
+-// Path to included `xdg-open`.
+-const localXdgOpenPath = path.join(__dirname, 'xdg-open');
+-
+ const {platform, arch} = process;
+
+ /**
+@@ -167,19 +164,7 @@ const baseOpen = async options => {
+ 		if (app) {
+ 			command = app;
+ 		} else {
+-			// When bundled by Webpack, there's no actual package file path and no local `xdg-open`.
+-			const isBundled = !__dirname || __dirname === '/';
+-
+-			// Check if local `xdg-open` exists and is executable.
+-			let exeLocalXdgOpen = false;
+-			try {
+-				await fs.access(localXdgOpenPath, fsConstants.X_OK);
+-				exeLocalXdgOpen = true;
+-			} catch {}
+-
+-			const useSystemXdgOpen = process.versions.electron ||
+-				platform === 'android' || isBundled || !exeLocalXdgOpen;
+-			command = useSystemXdgOpen ? 'xdg-open' : localXdgOpenPath;
++			command = 'xdg-open';
+ 		}
+
+ 		if (appArguments.length > 0) {

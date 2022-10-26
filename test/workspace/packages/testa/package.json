@@ -14,7 +14,8 @@
     "color": "^4.2.3",
     "esbuild": "^0.15.10",
     "knex": "^2.3.0",
-    "react-old": "npm:react@^18.2.0"
+    "react-old": "npm:react@^18.2.0",
+    "teste": "workspace:^"
   },
   "devDependencies": {
     "typescript": "^4.8.4"
