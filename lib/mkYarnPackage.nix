@@ -316,7 +316,7 @@ let
         then recursiveUpdate packageManifest packageOverrides."${nameAndRef}"
         else packageManifest;
     in
-    mkYarnPackage_internal {
+    makeOverridable mkYarnPackage_internal {
       inherit (mergedManifest) name outputName;
       packageManifest = mergedManifest;
       inherit allPackageData;
