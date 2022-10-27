@@ -41,6 +41,7 @@ let
       nodejsPackage ? pkgs.nodejs,
       build ? "",
       buildInputs ? [],
+      preInstallScript ? "",
       postInstallScript ? "",
       __noChroot ? null,
     }:
@@ -213,6 +214,7 @@ let
             export HOME=$tmpDir/home
             mkdir -p $HOME
 
+            ${preInstallScript}
             yarn nix run-build-scripts ${locatorJSON} $out $packageLocation
 
             cd $packageLocation
@@ -323,6 +325,7 @@ let
       src = if hasAttr "src" mergedManifest then mergedManifest.src else null;
       build = if hasAttr "build" mergedManifest then mergedManifest.build else "";
       buildInputs = if hasAttr "buildInputs" mergedManifest then mergedManifest.buildInputs else [];
+      preInstallScript = if hasAttr "preInstallScript" mergedManifest then mergedManifest.preInstallScript else "";
       postInstallScript = if hasAttr "postInstallScript" mergedManifest then mergedManifest.postInstallScript else "";
       __noChroot = if hasAttr "__noChroot" mergedManifest then mergedManifest.__noChroot else null;
     };
