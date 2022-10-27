@@ -475,6 +475,8 @@ export default {
         const shouldBeUnplugged = src != null ? true : (installer?.shouldBeUnplugged != null ? installer.customData.store.get(pkg.locatorHash) != null ? installer.shouldBeUnplugged(pkg, installer.customData.store.get(pkg.locatorHash), project.getDependencyMeta(structUtils.isVirtualLocator(pkg) ? structUtils.devirtualizeLocator(pkg) : pkg, pkg.version)) : false : true)
         const willOutputBeZip = !src && !shouldBeUnplugged
 
+        const isSourcePatch = src != null && pkg.reference.startsWith('patch:')
+
         let installCondition = null
 
         if (pkg.conditions != null) {
@@ -550,7 +552,7 @@ export default {
         let outputHashByPlatform: any = packageInExistingManifest?.outputHashByPlatform ?? {}
 
         await (async function() {
-          if (src != null) {
+          if (src != null && !isSourcePatch) {
             // no outputHash for when a src is provided as the build will be completed locally.
             outputHash = null
             outputHashByPlatform = null
@@ -563,7 +565,7 @@ export default {
           } else if (shouldBeUnplugged) {
             const shouldHashBePlatformSpecific = true // TODO only if package or dependencies have platform conditions maybe?
             if (shouldHashBePlatformSpecific) {
-              if (outputHashByPlatform[nixCurrentSystem()]) {
+              if (outputHashByPlatform[nixCurrentSystem()] && !isSourcePatch) {
                 // got existing hash for this platform in the manifest, use existing hash
                 outputHash = null
                 return

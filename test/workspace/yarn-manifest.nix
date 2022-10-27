@@ -6501,7 +6501,7 @@ let
       flatName = "make-dir";
       languageName = "node";
       scope = null;
-      descriptorRange = "npm:^3.0.0";
+      descriptorRange = "npm:^3.1.0";
       checksum = "9/17ad8c0b1b243f2b05ad0f313f4279ad067af7a9fcb51abcb1bd0a199d2e370f0edac84015611a6161371d8a58f2bbde8538656355b66311c24e2071c496e3ae";
       dependencies = {
         "semver" = packages."semver@npm:6.3.0";
@@ -7300,6 +7300,9 @@ let
       reference = "patch:open@npm%3A8.4.0#.yarn/patches/open-npm-8.4.0-df63cfe537::version=8.4.0&hash=e6ee73&locator=root-workspace-0b6124%40workspace%3A.";
       linkType = "HARD";
       outputName = "open-8.4.0-9b4636d0d9";
+      outputHashByPlatform = {
+        "aarch64-darwin" = "sha512-fhLJ778B2/lZjzfKYzt1dFk4OzenM2MFEiGhy4a4fjVJM7OLL4YzBLWaS64NUtWcWa+5ULvlSOyA9KliBgPa3A==";
+      };
       src = ./.yarn/patches/open-npm-8.4.0-df63cfe537;
       shouldBeUnplugged = true;
       flatName = "open";
@@ -8262,7 +8265,7 @@ let
       flatName = "semver";
       languageName = "node";
       scope = null;
-      descriptorRange = "npm:^6.3.0";
+      descriptorRange = "npm:^6.0.0";
       checksum = "9/18f3d42ec70a542e9efc498ecc3d0b9b088099115e8658b49d2bfc6470b46a6144b294374dac3f343fe1600039cbd80d5e830dd356053fd5abd4f1af5118a928";
       bin = {
         "semver" = "./bin/semver.js";
