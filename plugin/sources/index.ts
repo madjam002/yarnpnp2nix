@@ -319,6 +319,47 @@ class GeneratePnpFile extends BaseCommand {
   }
 }
 
+class MakePathWrappers extends BaseCommand {
+  static paths = [['nix', 'make-path-wrappers']]
+
+  binWrappersOutDirectory = Option.String({validator: t.isString()})
+  pnpOutDirectory = Option.String({validator: t.isString()})
+  packageRegistryDataPath = Option.String({validator: t.isString()})
+  topLevelPackageDirectory = Option.String({validator: t.isString()})
+
+  async execute() {
+    const packageRegistryData = JSON.parse(fs.readFileSync(this.packageRegistryDataPath, 'utf8'))
+
+    for (const pkgIdent of Object.keys(packageRegistryData)) {
+      const pkg = packageRegistryData[pkgIdent]
+      if (!pkg) continue
+
+      const ident = structUtils.makeIdent(pkg.manifest.scope, pkg.manifest.flatName)
+      const locator = structUtils.makeLocator(ident, pkg.reference)
+
+      const isVirtual = structUtils.isVirtualLocator(pkg);
+
+      const packageLocationAbs = pkg.drvPath + '/node_modules/' + pkg.name
+      const relativePackageLocation = path.relative(this.pnpOutDirectory, packageLocationAbs)
+      let packageLocation = packageLocationAbs
+
+      const isTopLevelPackage = packageLocationAbs.includes(this.topLevelPackageDirectory)
+      if (isTopLevelPackage) continue
+
+      if (isVirtual) {
+        packageLocation = path.join(this.pnpOutDirectory, VirtualFS.makeVirtualPath('./.yarn/__virtual__', structUtils.slugifyLocator(locator), relativePackageLocation))
+      }
+
+      for (const bin of Object.keys(pkg?.manifest?.bin ?? {})) {
+        const resolvedBinPath = path.join(packageLocation, pkg.manifest.bin[bin])
+        await xfs.writeFilePromise(path.join(this.binWrappersOutDirectory, bin), `node ${resolvedBinPath} "$@"`, {
+          mode: 0o755,
+        })
+      }
+    }
+  }
+}
+
 class RunBuildScriptsCommand extends BaseCommand {
   static paths = [['nix', 'run-build-scripts']]
 
@@ -692,6 +733,7 @@ export default {
     FetchCommand,
     ConvertToZipCommand,
     GeneratePnpFile,
+    MakePathWrappers,
     RunBuildScriptsCommand,
   ],
 }

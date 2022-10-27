@@ -49,6 +49,7 @@
               "testb@workspace:packages/testb" = {
                 build = ''
                   node index
+                  webpack --version
                 '';
               };
             };

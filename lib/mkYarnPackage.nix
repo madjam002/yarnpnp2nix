@@ -80,13 +80,6 @@ let
         inherit allPackageData;
       };
 
-      dependencyBinPaths = filter (d: d != null) (mapAttrsToList (dep: pkg:
-        let
-          pkgData = packageRegistry."${pkg.name}@${pkg.reference}";
-        in
-        if pkgData != null && pkgData.drvPath != "/dev/null" && hasAttr "bin" pkgData.manifest then pkgData.drvPath.binDrvPath + "/bin" else null
-      ) (if hasAttr "dependencies" packageManifest then packageManifest.dependencies else {}));
-
       packageRegistryJSON = builtins.toJSON packageRegistry;
 
       # Bit of a HACK, builtins.toFile cannot contain a string with references to /nix/store paths,
@@ -161,12 +154,15 @@ let
             cp -rT ${src} $packageLocation
             chmod -R +w $packageLocation
 
+            mkdir -p $tmpDir/wrappedbins
+            yarn nix make-path-wrappers $tmpDir/wrappedbins $out $tmpDir/packageRegistryData.json "$packageLocation"
+
             cd $packageLocation
             nodeOptions="--require $out/.pnp.cjs"
             oldNodeOptions="$NODE_OPTIONS"
             oldPath="$PATH"
             export NODE_OPTIONS="$NODE_OPTIONS $nodeOptions"
-            export PATH="$PATH:${concatStringsSep ":" dependencyBinPaths}"
+            export PATH="$PATH:$tmpDir/wrappedbins"
 
             ${build}
 
@@ -303,7 +299,6 @@ let
       package = fetchDerivation;
       # for debugging with nix eval
       inherit packageRegistry;
-      inherit dependencyBinPaths;
     };
 
   mkYarnPackageFromManifest_internal =
