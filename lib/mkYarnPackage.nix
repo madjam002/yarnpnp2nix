@@ -1,9 +1,9 @@
-{ pkgs, lib }:
+{ defaultPkgs, lib }:
 
 with lib;
 
 let
-  nixPlugin = "${pkgs.callPackage ../yarnPlugin.nix {}}/plugin.js";
+  nixPlugin = "${defaultPkgs.callPackage ../yarnPlugin.nix {}}/plugin.js";
 
   setupYarnBinScript = ''
     export YARN_PLUGINS=${nixPlugin}
@@ -16,15 +16,17 @@ let
 
   mkYarnPackagesFromManifest =
     {
+      pkgs ? defaultPkgs,
       yarnManifest,
       packageOverrides ? {},
     }:
     let
-      allPackageData = buildPackageDataFromYarnManifest { inherit yarnManifest; inherit packageOverrides; };
+      allPackageData = buildPackageDataFromYarnManifest { inherit pkgs; inherit yarnManifest; inherit packageOverrides; };
     in
     mapAttrs (key: value:
       mkYarnPackageFromManifest_internal {
         package = key;
+        inherit pkgs;
         inherit yarnManifest;
         inherit packageOverrides;
         inherit allPackageData;
@@ -33,12 +35,13 @@ let
 
   mkYarnPackage_internal =
     {
+      pkgs,
       name,
       outputName ? name,
       src ? null,
       packageManifest,
       allPackageData,
-      nodejsPackage ? pkgs.nodejs,
+      nodejsPackage,
       build ? "",
       buildInputs ? [],
       preInstallScript ? "",
@@ -77,6 +80,7 @@ let
       });
 
       packageRegistry = buildPackageRegistry {
+        inherit pkgs;
         topLevel = packageManifest;
         inherit allPackageData;
       };
@@ -119,7 +123,7 @@ let
 
         buildInputs = with pkgs; [
           nodejsPackage
-          yarnBerry
+          defaultPkgs.yarnBerry
           unzip
         ]
         ++ (if stdenv.isDarwin then [
@@ -261,7 +265,7 @@ let
 
         buildInputs = with pkgs; [
           nodejsPackage
-          yarnBerry
+          defaultPkgs.yarnBerry
         ];
 
         generateRuntimePhase = ''
@@ -306,6 +310,7 @@ let
   mkYarnPackageFromManifest_internal =
     {
       package,
+      pkgs,
       yarnManifest,
       packageOverrides,
       allPackageData,
@@ -319,6 +324,8 @@ let
         else packageManifest;
     in
     makeOverridable mkYarnPackage_internal {
+      inherit pkgs;
+      nodejsPackage = if hasAttr "nodejsPackage" mergedManifest then mergedManifest.nodejsPackage else pkgs.nodejs;
       inherit (mergedManifest) name outputName;
       packageManifest = mergedManifest;
       inherit allPackageData;
@@ -332,6 +339,7 @@ let
 
   buildPackageDataFromYarnManifest =
     {
+      pkgs,
       yarnManifest,
       packageOverrides,
     }:
@@ -349,6 +357,7 @@ let
             "src" "installCondition" "dependencies" "name" "reference"
           ])) resolvedPkg;
           drv = mkYarnPackageFromManifest_internal {
+            inherit pkgs;
             inherit yarnManifest;
             package = "${resolvedPkg.name}@${resolvedPkg.reference}";
             inherit packageOverrides;
@@ -366,6 +375,7 @@ let
 
   buildPackageRegistry =
     {
+      pkgs,
       topLevel,
       allPackageData,
     }:
