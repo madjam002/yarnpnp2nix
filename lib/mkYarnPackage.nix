@@ -103,9 +103,9 @@ let
 
       createLockFileScript = builtins.appendContext ''
         cat ${packageRegistryFile} | ${pkgs.jq}/bin/jq -rcM \
-          --arg drvPath "$packageDrvLocation" \
-          --arg locatorString ${builtins.toJSON ("${locatorString}")} \
-          '.[$locatorString].drvPath = $drvPath' > $tmpDir/packageRegistryData.json
+          --arg packageLocation "$packageLocation" \
+          --arg locatorString ${builtins.toJSON locatorString} \
+          '.[$locatorString].packageLocation = $packageLocation' > $tmpDir/packageRegistryData.json
 
         yarn nix create-lockfile $tmpDir/packageRegistryData.json
       '' packageRegistryContext;
@@ -153,14 +153,14 @@ let
             packageDrvLocation="$out"
             mkdir -p $packageLocation
             ${createLockFileScript}
-            yarn nix generate-pnp-file $out $tmpDir/packageRegistryData.json "$packageLocation"
+            yarn nix generate-pnp-file $out $tmpDir/packageRegistryData.json "${locatorString}"
 
             ${if build != "" then ''
             cp -rT ${src} $packageLocation
             chmod -R +w $packageLocation
 
             mkdir -p $tmpDir/wrappedbins
-            yarn nix make-path-wrappers $tmpDir/wrappedbins $out $tmpDir/packageRegistryData.json "$packageLocation"
+            yarn nix make-path-wrappers $tmpDir/wrappedbins $out $tmpDir/packageRegistryData.json "${locatorString}"
 
             cd $packageLocation
             nodeOptions="--require $out/.pnp.cjs"
@@ -212,7 +212,7 @@ let
             packageDrvLocation="$out"
             ${if build == "" then createLockFileScript else ""}
 
-            yarn nix generate-pnp-file $out $tmpDir/packageRegistryData.json "$packageLocation"
+            yarn nix generate-pnp-file $out $tmpDir/packageRegistryData.json "${locatorString}"
 
             # create dummy home directory in case any build scripts need it
             export HOME=$tmpDir/home
@@ -277,7 +277,7 @@ let
           ${createLockFileScript}
 
           mkdir -p $out
-          yarn nix generate-pnp-file $out $tmpDir/packageRegistryData.json "$packageLocation"
+          yarn nix generate-pnp-file $out $tmpDir/packageRegistryData.json "${locatorString}"
         '';
 
         wrapBinPhase =
@@ -299,6 +299,24 @@ let
             chmod +x $out/bin/${binKey}
             '') bin)}
           '' else " ";
+
+        shellHook = ''
+          tmpDir=$TMPDIR
+          ${setupYarnBinScript}
+
+          packageLocation="/"
+          packageDrvLocation="/"
+          (cd $tmpDir && ${createLockFileScript})
+
+          yarn nix generate-pnp-file $tmpDir $tmpDir/packageRegistryData.json "${locatorString}"
+
+          nodeOptions="--require $TMPDIR/.pnp.cjs"
+          export NODE_OPTIONS="$NODE_OPTIONS $nodeOptions"
+
+          mkdir -p $tmpDir/wrappedbins
+          yarn nix make-path-wrappers $tmpDir/wrappedbins $tmpDir $tmpDir/packageRegistryData.json "${locatorString}"
+          export PATH="$PATH:$tmpDir/wrappedbins"
+        '';
       };
     in
     finalDerivation // {

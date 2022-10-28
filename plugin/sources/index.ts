@@ -219,7 +219,7 @@ class GeneratePnpFile extends BaseCommand {
 
   outDirectory = Option.String({validator: t.isString()})
   packageRegistryDataPath = Option.String({validator: t.isString()})
-  topLevelPackageDirectory = Option.String({validator: t.isString()})
+  topLevelPackageLocator = Option.String({validator: t.isString()})
 
   async execute() {
     const configuration = await Configuration.find(process.cwd(), this.context.plugins);
@@ -240,6 +240,8 @@ class GeneratePnpFile extends BaseCommand {
     const packageRegistryData = JSON.parse(fs.readFileSync(this.packageRegistryDataPath, 'utf8'))
 
     let topLevelPackage = null
+
+    const outDirectoryReal = fs.realpathSync(this.outDirectory)
 
     for (const pkgIdent of Object.keys(packageRegistryData)) {
       const pkg = packageRegistryData[pkgIdent]
@@ -264,8 +266,8 @@ class GeneratePnpFile extends BaseCommand {
         }
       }
 
-      const packageLocationAbs = pkg.drvPath + '/node_modules/' + pkg.name
-      const relativePackageLocation = path.relative(this.outDirectory, packageLocationAbs)
+      const packageLocationAbs = pkg.packageLocation ?? (pkg.drvPath + '/node_modules/' + pkg.name)
+      const relativePackageLocation = path.relative(outDirectoryReal, packageLocationAbs)
       let packageLocation = (relativePackageLocation.startsWith('../') ? relativePackageLocation : ('./' + relativePackageLocation)) + '/'
 
       if (isVirtual) {
@@ -289,7 +291,7 @@ class GeneratePnpFile extends BaseCommand {
         })
       }
 
-      if (packageLocationAbs.includes(this.topLevelPackageDirectory)) {
+      if (`${pkg.name}@${pkg.reference}` === this.topLevelPackageLocator) {
         topLevelPackage = packageData
       }
     }
@@ -325,10 +327,12 @@ class MakePathWrappers extends BaseCommand {
   binWrappersOutDirectory = Option.String({validator: t.isString()})
   pnpOutDirectory = Option.String({validator: t.isString()})
   packageRegistryDataPath = Option.String({validator: t.isString()})
-  topLevelPackageDirectory = Option.String({validator: t.isString()})
+  topLevelPackageLocator = Option.String({validator: t.isString()})
 
   async execute() {
     const packageRegistryData = JSON.parse(fs.readFileSync(this.packageRegistryDataPath, 'utf8'))
+
+    const outDirectoryReal = fs.realpathSync(this.pnpOutDirectory)
 
     for (const pkgIdent of Object.keys(packageRegistryData)) {
       const pkg = packageRegistryData[pkgIdent]
@@ -339,15 +343,15 @@ class MakePathWrappers extends BaseCommand {
 
       const isVirtual = structUtils.isVirtualLocator(pkg);
 
-      const packageLocationAbs = pkg.drvPath + '/node_modules/' + pkg.name
-      const relativePackageLocation = path.relative(this.pnpOutDirectory, packageLocationAbs)
+      const packageLocationAbs = pkg.packageLocation ?? (pkg.drvPath + '/node_modules/' + pkg.name)
+      const relativePackageLocation = path.relative(outDirectoryReal, packageLocationAbs)
       let packageLocation = packageLocationAbs
 
-      const isTopLevelPackage = packageLocationAbs.includes(this.topLevelPackageDirectory)
+      const isTopLevelPackage = `${pkg.name}@${pkg.reference}` === this.topLevelPackageLocator
       if (isTopLevelPackage) continue
 
       if (isVirtual) {
-        packageLocation = path.join(this.pnpOutDirectory, VirtualFS.makeVirtualPath('./.yarn/__virtual__', structUtils.slugifyLocator(locator), relativePackageLocation))
+        packageLocation = path.join(outDirectoryReal, VirtualFS.makeVirtualPath('./.yarn/__virtual__', structUtils.slugifyLocator(locator), relativePackageLocation))
       }
 
       for (const bin of Object.keys(pkg?.manifest?.bin ?? {})) {
@@ -723,7 +727,7 @@ export default {
         for (const pkg of packageRegistryPackages) {
           if (pkg.reference.startsWith('workspace:')) {
             if (pkg.drvPath !== process.env.out) {
-              await project.addWorkspace(path.join(pkg.drvPath, 'node_modules', pkg.name))
+              await project.addWorkspace(pkg.packageLocation ?? path.join(pkg.drvPath, 'node_modules', pkg.name))
             }
           }
         }
