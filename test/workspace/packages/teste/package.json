@@ -1,7 +1,10 @@
 {
   "name": "teste",
   "version": "0.0.0",
-  "dependencies": {
+  "devDependencies": {
     "jest": "^29.2.2"
+  },
+  "peerDependencies": {
+    "react": "*"
   }
 }

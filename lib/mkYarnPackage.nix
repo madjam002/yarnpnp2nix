@@ -11,7 +11,8 @@ let
 
   resolvePkg = pkg: if hasAttr "canonicalPackage" pkg then (
     pkg.canonicalPackage //
-    (if hasAttr "dependencies" pkg then { inherit (pkg) dependencies; } else {})
+    (if hasAttr "dependencies" pkg then { inherit (pkg) dependencies; } else {}) //
+    (if hasAttr "devDependencies" pkg then { inherit (pkg) devDependencies; } else {})
    ) else pkg;
 
   mkYarnPackagesFromManifest =
@@ -32,6 +33,39 @@ let
         inherit allPackageData;
       }
     ) yarnManifest;
+
+  mkCreateLockFileScript_internal =
+    {
+      packageRegistry,
+      locatorString,
+    }:
+    let
+      packageRegistryJSON = builtins.toJSON packageRegistry;
+
+      # Bit of a HACK, builtins.toFile cannot contain a string with references to /nix/store paths,
+      # so we extract the "context" (which is a reference to any /nix/store paths in the JSON), then remove
+      # the context from the string and write the resulting string to disk using builtins.toFile.
+      # We then manually append the context which contains the references to the /nix/store paths
+      # to `createLockFileScript` so when the script is used, any npm dependency /nix/store paths
+      # are built and realised.
+      packageRegistryContext = builtins.getContext packageRegistryJSON;
+
+      packageRegistryFile = builtins.toFile "yarn-package-registry.json" (
+        # unsafeDiscardStringContext is undocumented
+        # https://github.com/NixOS/nix/blob/ac0fb38e8a5a25a84fa17704bd31b453211263eb/src/libexpr/primops/context.cc#L8
+        builtins.unsafeDiscardStringContext packageRegistryJSON
+      );
+
+      createLockFileScript = builtins.appendContext ''
+        cat ${packageRegistryFile} | ${defaultPkgs.jq}/bin/jq -rcM \
+          --arg packageLocation "$packageLocation" \
+          --arg locatorString ${builtins.toJSON locatorString} \
+          '.[$locatorString].packageLocation = $packageLocation' > $tmpDir/packageRegistryData.json
+
+        yarn nix create-lockfile $tmpDir/packageRegistryData.json
+      '' packageRegistryContext;
+    in
+    createLockFileScript;
 
   mkYarnPackage_internal =
     {
@@ -85,30 +119,22 @@ let
         inherit allPackageData;
       };
 
-      packageRegistryJSON = builtins.toJSON packageRegistry;
+      createLockFileScript = mkCreateLockFileScript_internal {
+        inherit packageRegistry;
+        inherit locatorString;
+      };
 
-      # Bit of a HACK, builtins.toFile cannot contain a string with references to /nix/store paths,
-      # so we extract the "context" (which is a reference to any /nix/store paths in the JSON), then remove
-      # the context from the string and write the resulting string to disk using builtins.toFile.
-      # We then manually append the context which contains the references to the /nix/store paths
-      # to `createLockFileScript` so when the script is used, any npm dependency /nix/store paths
-      # are built and realised.
-      packageRegistryContext = builtins.getContext packageRegistryJSON;
+      packageRegistryRuntimeOnly = buildPackageRegistry {
+        inherit pkgs;
+        topLevel = packageManifest;
+        inherit allPackageData;
+        excludeDevDependencies = true;
+      };
 
-      packageRegistryFile = builtins.toFile "yarn-package-registry.json" (
-        # unsafeDiscardStringContext is undocumented
-        # https://github.com/NixOS/nix/blob/ac0fb38e8a5a25a84fa17704bd31b453211263eb/src/libexpr/primops/context.cc#L8
-        builtins.unsafeDiscardStringContext packageRegistryJSON
-      );
-
-      createLockFileScript = builtins.appendContext ''
-        cat ${packageRegistryFile} | ${pkgs.jq}/bin/jq -rcM \
-          --arg packageLocation "$packageLocation" \
-          --arg locatorString ${builtins.toJSON locatorString} \
-          '.[$locatorString].packageLocation = $packageLocation' > $tmpDir/packageRegistryData.json
-
-        yarn nix create-lockfile $tmpDir/packageRegistryData.json
-      '' packageRegistryContext;
+      createLockFileScriptForRuntime = mkCreateLockFileScript_internal {
+        packageRegistry = packageRegistryRuntimeOnly;
+        inherit locatorString;
+      };
 
       fetchDerivation = pkgs.stdenv.mkDerivation {
         name = outputName + (if willOutputBeZip then ".zip" else "");
@@ -274,7 +300,7 @@ let
 
           packageLocation=${fetchDerivation}/node_modules/${name}
           packageDrvLocation=${fetchDerivation}
-          ${createLockFileScript}
+          ${createLockFileScriptForRuntime}
 
           mkdir -p $out
           yarn nix generate-pnp-file $out $tmpDir/packageRegistryData.json "${locatorString}"
@@ -369,10 +395,12 @@ let
         if hasAttr "installCondition" resolvedPkg && resolvedPkg.installCondition != null && (resolvedPkg.installCondition pkgs.stdenv) == false then null
         else
         {
+          inherit pkg;
           inherit (pkg) name reference;
+          canonicalReference = resolvedPkg.reference;
           inherit (resolvedPkg) linkType;
           manifest = filterAttrs (key: b: !(builtins.elem key [
-            "src" "installCondition" "dependencies" "name" "reference"
+            "src" "installCondition" "dependencies" "devDependencies" "name" "reference"
           ])) resolvedPkg;
           drv = mkYarnPackageFromManifest_internal {
             inherit pkgs;
@@ -381,9 +409,13 @@ let
             inherit packageOverrides;
             inherit allPackageData;
           };
-          packageDependencies = if (hasAttr "dependencies" pkg && pkg.dependencies != null) then mapAttrs (name: depPkg:
-            [ depPkg.name depPkg.reference ]
-          ) pkg.dependencies else [];
+          packageDependencies =
+            (if (hasAttr "dependencies" pkg && pkg.dependencies != null) then mapAttrs (name: depPkg:
+              [ depPkg.name depPkg.reference ]
+            ) pkg.dependencies else {}) //
+            (if (hasAttr "devDependencies" pkg && pkg.devDependencies != null) then mapAttrs (name: depPkg:
+              [ depPkg.name depPkg.reference ]
+            ) pkg.devDependencies else {});
         };
 
       allPackageData =
@@ -396,6 +428,7 @@ let
       pkgs,
       topLevel,
       allPackageData,
+      excludeDevDependencies ? false,
     }:
     let
       topLevelRef = "${topLevel.name}@${topLevel.reference}";
@@ -406,21 +439,31 @@ let
         if data == null then null
         else
         {
-          inherit (data) name reference linkType manifest packageDependencies;
+          inherit (data) name reference canonicalReference linkType manifest;
           drvPath = data.drv.package // { binDrvPath = data.drv; };
+          packageDependencies = if !excludeDevDependencies then data.packageDependencies else (
+            (if (hasAttr "dependencies" data.pkg && data.pkg.dependencies != null) then mapAttrs (name: depPkg:
+              [ depPkg.name depPkg.reference ]
+            ) data.pkg.dependencies else {})
+          );
         };
       topLevelPackageData =
         if hasAttr "installCondition" topLevel && topLevel.installCondition != null && (topLevel.installCondition pkgs.stdenv) == false then null
         else
         {
           inherit (topLevel) name reference linkType;
+          canonicalReference = topLevel.reference;
           manifest = filterAttrs (key: b: !(builtins.elem key [
-            "src" "installCondition" "dependencies"
+            "src" "installCondition" "dependencies" "devDependencies"
           ])) topLevel;
           drvPath = "/dev/null"; # if package is toplevel package then the location is determined in the buildPhase as it will be $out
-          packageDependencies = if (hasAttr "dependencies" topLevel && topLevel.dependencies != null) then mapAttrs (name: depPkg:
-            [ depPkg.name depPkg.reference ]
-          ) topLevel.dependencies else [];
+          packageDependencies =
+            (if (hasAttr "dependencies" topLevel && topLevel.dependencies != null) then mapAttrs (name: depPkg:
+              [ depPkg.name depPkg.reference ]
+            ) topLevel.dependencies else {}) //
+            (if (!excludeDevDependencies && hasAttr "devDependencies" topLevel && topLevel.devDependencies != null) then mapAttrs (name: depPkg:
+              [ depPkg.name depPkg.reference ]
+            ) topLevel.devDependencies else {});
         };
       # thanks to https://github.com/NixOS/nix/issues/552#issuecomment-971212372
       # for documentation and a good example on how builtins.genericClosure works
@@ -437,6 +480,17 @@ let
                 { key = depPkgRef; pkg = dep; }
               )
               (attrNames pkg.dependencies)
+          ) else []) ++
+          (if !excludeDevDependencies && hasAttr "devDependencies" pkg && pkg.devDependencies != null then (
+            map
+              (depName:
+                let
+                  dep = pkg.devDependencies.${depName};
+                  depPkgRef = "${dep.name}@${dep.reference}";
+                in
+                { key = depPkgRef; pkg = dep; }
+              )
+              (attrNames pkg.devDependencies)
           ) else []);
       };
       packageRegistryData = listToAttrs (

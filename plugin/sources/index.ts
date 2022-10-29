@@ -523,7 +523,58 @@ export default {
           }
         }
 
-        const dependencies = (await Promise.all(Array.from(pkg.dependencies).map(async ([key, value]) => {
+        let pkgDependencies = pkg.dependencies
+        let pkgDevDependencies = new Map()
+
+        const shouldLookupDevDependencies = canonicalPackage.reference.startsWith('workspace:')
+
+        // lookup devDependencies from manifests for workspace: packages
+        if (shouldLookupDevDependencies) {
+          const manifest = await ZipOpenFS.openPromise(async (zipOpenFs) => {
+            const linkers = project.configuration.getLinkers();
+            const linkerOptions = {project, report: new StreamReport({stdout: new PassThrough(), configuration: project.configuration})};
+
+            const linker = linkers.find(linker => linker.supportsPackage(canonicalPackage, linkerOptions));
+            if (!linker)
+              throw new Error(`The package ${structUtils.prettyLocator(project.configuration, pkg)} isn't supported by any of the available linkers`);
+
+            const packageLocation = await linker.findPackageLocation(canonicalPackage, linkerOptions);
+            const packageFs = new CwdFS(packageLocation, {baseFs: zipOpenFs});
+            const manifest = await Manifest.find(PortablePath.dot, {baseFs: packageFs});
+
+            return manifest
+          })
+
+          if (manifest != null) {
+            pkgDependencies = new Map()
+            pkgDevDependencies = new Map()
+
+            Array.from(manifest.dependencies).map(([key, value]) => pkgDependencies.set(key, pkg.dependencies.get(key)))
+            if (manifest.devDependencies)
+              Array.from(manifest.devDependencies).map(([key, value]) => pkgDevDependencies.set(key, pkg.dependencies.get(key)))
+          }
+        }
+
+        const dependencies = (await Promise.all(Array.from(pkgDependencies).map(async ([key, value]) => {
+          const resolutionHash = project.storedResolutions.get(value.descriptorHash)
+          let resolvedPkg = resolutionHash != null ? project.storedPackages.get(resolutionHash) :
+            null
+          if (!resolvedPkg) {
+            console.log('failed to resolve', value)
+            return null
+          }
+          // reference virtual packages instead so that peerDependencies are respected
+          // if (structUtils.isVirtualLocator(resolvedPkg)) {
+          //   resolvedPkg = structUtils.devirtualizeLocator(resolvedPkg)
+          // }
+          return {
+            key,
+            name: structUtils.stringifyIdent(value),
+            packageManifestId: structUtils.stringifyIdent(resolvedPkg) + '@' + resolvedPkg.reference,
+          }
+        }))).filter(pkg => !!pkg)
+
+        const devDependencies = (await Promise.all(Array.from(pkgDevDependencies).map(async ([key, value]) => {
           const resolutionHash = project.storedResolutions.get(value.descriptorHash)
           let resolvedPkg = resolutionHash != null ? project.storedPackages.get(resolutionHash) :
             null
@@ -627,8 +678,8 @@ export default {
           scope: pkg.scope,
           checksum: yarnChecksum,
 
-          // TODO this includes devDependencies, we need to split them out
           dependencies,
+          devDependencies,
           packagePeers,
         }
       }
@@ -699,6 +750,7 @@ export default {
         }
 
         writeDependencies('dependencies', pkg.dependencies)
+        writeDependencies('devDependencies', pkg.devDependencies)
 
         if (!pkg.isVirtual && pkg.packagePeers && pkg.packagePeers.length > 0) {
           manifestNix.push(`      packagePeers = [`)
@@ -725,7 +777,7 @@ export default {
         const packageRegistryPackages: any[] = Object.values(packageRegistryData).filter(pkg => !!pkg?.manifest)
 
         for (const pkg of packageRegistryPackages) {
-          if (pkg.reference.startsWith('workspace:')) {
+          if (pkg.canonicalReference.startsWith('workspace:')) {
             if (pkg.drvPath !== process.env.out) {
               await project.addWorkspace(pkg.packageLocation ?? path.join(pkg.drvPath, 'node_modules', pkg.name))
             }
