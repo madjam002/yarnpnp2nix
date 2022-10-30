@@ -373,6 +373,8 @@ let
     in
     finalDerivation // {
       package = fetchDerivation;
+      manifest = packageManifest;
+      transitiveRuntimePackages = filter (pkg: pkg != null) (mapAttrsToList (key: pkg: if pkg != null && !isString pkg.drvPath then pkg.drvPath.binDrvPath else null) packageRegistryRuntimeOnly);
       # for debugging with nix eval
       inherit packageRegistry;
     };
