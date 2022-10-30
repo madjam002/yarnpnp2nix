@@ -15,7 +15,8 @@
     "esbuild": "^0.15.10",
     "knex": "^2.3.0",
     "react-old": "npm:react@^18.2.0",
-    "teste": "workspace:^"
+    "teste": "workspace:^",
+    "testf": "workspace:^"
   },
   "devDependencies": {
     "typescript": "^4.8.4"

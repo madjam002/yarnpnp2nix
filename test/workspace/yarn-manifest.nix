@@ -9053,6 +9053,7 @@ let
         "knex" = packages."knex@virtual:873621ee06b4625ead2be11f2d77ba70a136cc274552602a099052f59522f7193183c2fe44bd5a376d2f62cece35edf18f6bbeac7390077ea336f092796c7037#npm:2.3.0";
         "react-old" = packages."react@npm:18.2.0";
         "teste" = packages."teste@virtual:873621ee06b4625ead2be11f2d77ba70a136cc274552602a099052f59522f7193183c2fe44bd5a376d2f62cece35edf18f6bbeac7390077ea336f092796c7037#workspace:packages/teste";
+        "testf" = packages."testf@workspace:packages/testf";
       };
       devDependencies = {
         "typescript" = packages."typescript@patch:typescript@npm%3A4.8.4#optional!builtin<compat/typescript>::version=4.8.4&hash=701156";
@@ -9162,6 +9163,18 @@ let
         "@types/react"
         "react"
       ];
+    };
+    "testf@workspace:packages/testf" = {
+      name = "testf";
+      reference = "workspace:packages/testf";
+      linkType = "SOFT";
+      outputName = "testf-0.0.0-8fd140df6a";
+      src = ./packages/testf;
+      shouldBeUnplugged = true;
+      flatName = "testf";
+      languageName = "unknown";
+      scope = null;
+      descriptorRange = "workspace:packages/testf";
     };
     "tildify@npm:2.0.0" = {
       name = "tildify";

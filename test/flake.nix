@@ -41,6 +41,7 @@
                 outputHashByPlatform."x86_64-linux" = "sha512-jirTC3XTIyBYEe1l9IgSr8S4zkkl6YvRNaqeQk1itXmbibRfk0KxziApSAmNByf+y0Z9vmMPmnJpr6OE3PODOg==";
               };
               "testa@workspace:packages/testa" = {
+                filterDependencies = dep: dep != "color" && dep != "testf";
                 build = ''
                   echo $PATH
                   tsc --version
@@ -48,7 +49,7 @@
               };
               "testb@workspace:packages/testb" = {
                 build = ''
-                  node index
+                  node build
                   webpack --version
                 '';
               };

@@ -5320,6 +5320,7 @@ __metadata:
     knex: "npm:^2.3.0"
     react-old: "npm:react@^18.2.0"
     teste: "workspace:^"
+    testf: "workspace:^"
     typescript: "npm:^4.8.4"
   bin:
     testa-test: ./bin/testa-test
@@ -5382,6 +5383,12 @@ __metadata:
     jest: "npm:^29.2.2"
   peerDependencies:
     react: "*"
+  languageName: unknown
+  linkType: soft
+
+"testf@workspace:^, testf@workspace:packages/testf":
+  version: 0.0.0-use.local
+  resolution: "testf@workspace:packages/testf"
   languageName: unknown
   linkType: soft
 

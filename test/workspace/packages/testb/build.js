@@ -4,12 +4,12 @@ console.log('hello from testb 5!')
 
 // test importing various packages which will throw an exception if there are any issues with yarnpnp2nix
 require('test-portal')
+require('next/image')
 require('react-dom')
 require('sharp')
 require('resolve-dir') // resolve-dir has circular package dependencies
 require('test-tgz-redux-saga-core')
 require('testa')
-require('testa/runtimeTest')
 
 const { createCanvas } = require('canvas')
 const canvas = createCanvas(200, 200)
