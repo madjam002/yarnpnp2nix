@@ -2,4 +2,4 @@
 
 console.log('Hello world from package!')
 
-require('../blah.js')
+require('../shellEnvironmentTest.js')

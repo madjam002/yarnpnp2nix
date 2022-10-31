@@ -5316,6 +5316,7 @@ __metadata:
   dependencies:
     chai: "npm:^4.3.6"
     color: "npm:^4.2.3"
+    enhanced-resolve: "npm:^5.10.0"
     esbuild: "npm:^0.15.10"
     knex: "npm:^2.3.0"
     react-old: "npm:react@^18.2.0"

@@ -4880,7 +4880,7 @@ let
       flatName = "graceful-fs";
       languageName = "node";
       scope = null;
-      descriptorRange = "npm:^4.2.9";
+      descriptorRange = "npm:^4.2.4";
       checksum = "9/6b5f9b5aeaee0459b9c37bdbf9624f788703ce291d6bf2d7751f5003942e853f232ca613aec818d1ff7622379bc8b434c635bfda99db93e0b9b8da80ec3d844d";
     };
     "has-flag@npm:3.0.0" = {
@@ -8842,7 +8842,7 @@ let
       flatName = "tapable";
       languageName = "node";
       scope = null;
-      descriptorRange = "npm:^2.1.1";
+      descriptorRange = "npm:^2.2.0";
       checksum = "9/d54320ef41e04b13e27e20bfc355bd27bccb4b1ac28123a35d36d903b393944a957a7629b56e808e1a2ef03dcaf1c114e97de7a1b7cbf16e522cd0630219702e";
     };
     "tar-fs@npm:2.1.1" = {
@@ -9049,6 +9049,7 @@ let
       dependencies = {
         "chai" = packages."chai@npm:4.3.6";
         "color" = packages."color@npm:4.2.3";
+        "enhanced-resolve" = packages."enhanced-resolve@npm:5.10.0";
         "esbuild" = packages."esbuild@npm:0.15.10";
         "knex" = packages."knex@virtual:873621ee06b4625ead2be11f2d77ba70a136cc274552602a099052f59522f7193183c2fe44bd5a376d2f62cece35edf18f6bbeac7390077ea336f092796c7037#npm:2.3.0";
         "react-old" = packages."react@npm:18.2.0";

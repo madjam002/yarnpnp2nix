@@ -62,6 +62,7 @@
             esbuild = yarnPackages."esbuild@npm:0.15.10";
             testa = yarnPackages."testa@workspace:packages/testa";
             testb = yarnPackages."testb@workspace:packages/testb";
+            teste = yarnPackages."teste@workspace:packages/teste";
           };
         images = {
           testa = channels.nixpkgs.dockerTools.streamLayeredImage {

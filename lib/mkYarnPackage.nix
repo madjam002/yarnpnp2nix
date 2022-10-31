@@ -359,8 +359,7 @@ let
           packageLocation="/"
           packageDrvLocation="/"
           (cd $tmpDir && ${createLockFileScript})
-
-          yarn nix generate-pnp-file $tmpDir $tmpDir/packageRegistryData.json "${locatorString}"
+          (cd $tmpDir && yarn nix generate-pnp-file $tmpDir $tmpDir/packageRegistryData.json "${locatorString}")
 
           nodeOptions="--require $TMPDIR/.pnp.cjs"
           export NODE_OPTIONS="$NODE_OPTIONS $nodeOptions"
@@ -370,11 +369,61 @@ let
           export PATH="$PATH:$tmpDir/wrappedbins"
         '';
       };
+
+      dependencyBins = listToAttrs (concatMap (pkg:
+        let
+          pkgRef = "${pkg.name}@${pkg.reference}";
+          packageDrv = allPackageData."${pkgRef}".drv.package;
+        in
+        mapAttrsToList (binKey: binScript: { name = binKey; value = { inherit pkg; inherit binScript; }; }) ((resolvePkg pkg).bin or {})
+      ) (mapAttrsToList (__: dep: dep) packageManifest.dependencies));
+
+      shellRuntimeEnvironment = pkgs.stdenv.mkDerivation {
+        name = outputName + "-shell-environment";
+        phases = [ "generateRuntimePhase" ];
+
+        buildInputs = with pkgs; [
+          nodejsPackage
+          defaultPkgs.yarnBerry
+        ];
+
+        generateRuntimePhase = ''
+          tmpDir=$TMPDIR
+          ${setupYarnBinScript}
+
+          packageLocation="/"
+          packageDrvLocation="/"
+          ${createLockFileScriptForRuntime}
+
+          mkdir -p $out/bin
+          cp $tmpDir/yarn.lock $out
+          cp $tmpDir/packageRegistryData.json $out
+
+          ${concatStringsSep "\n" (mapAttrsToList (binKey: { pkg, binScript }: ''
+          cat << EOF > $out/bin/${binKey}
+          #!${pkgs.bashInteractive}/bin/bash
+
+          pnpDir="\$(mktemp -d)"
+          (cd $out && YARN_PLUGINS=${nixPlugin} ${defaultPkgs.yarnBerry}/bin/yarn nix generate-pnp-file \$pnpDir $out/packageRegistryData.json "${locatorString}")
+          binPackageLocation="\$(${nodejsPackage}/bin/node -r \$pnpDir/.pnp.cjs -e 'console.log(require("pnpapi").getPackageInformation({ name: process.argv[1], reference: process.argv[2] })?.packageLocation)' "${pkg.name}" "${pkg.reference}")"
+
+          export PATH="${nodejsPackage}/bin:\''$PATH"
+
+          nodeOptions="--require \$pnpDir/.pnp.cjs"
+          export NODE_OPTIONS="\''$NODE_OPTIONS \''$nodeOptions"
+
+          ${nodejsPackage}/bin/node \$binPackageLocation./${binScript} "\$@"
+          EOF
+          chmod +x $out/bin/${binKey}
+          '') dependencyBins)}
+        '';
+      };
     in
     finalDerivation // {
       package = fetchDerivation;
       manifest = packageManifest;
       transitiveRuntimePackages = filter (pkg: pkg != null) (mapAttrsToList (key: pkg: if pkg != null && !isString pkg.drvPath then pkg.drvPath.binDrvPath else null) packageRegistryRuntimeOnly);
+      inherit shellRuntimeEnvironment;
       # for debugging with nix eval
       inherit packageRegistry;
     };
@@ -388,8 +437,21 @@ let
     }:
     let
       packageManifest = yarnManifest."${package}";
-      nameAndRef = "${packageManifest.name}@${packageManifest.reference}";
     in
+    mkYarnPackageFromPackageManifest_internal {
+      inherit packageManifest;
+      inherit pkgs;
+      inherit yarnManifest;
+      inherit allPackageData;
+    };
+
+  mkYarnPackageFromPackageManifest_internal =
+    {
+      packageManifest,
+      pkgs,
+      yarnManifest,
+      allPackageData,
+    }:
     (makeOverridable mkYarnPackage_internal {
       inherit pkgs;
       nodejsPackage = if hasAttr "nodejsPackage" packageManifest then packageManifest.nodejsPackage else pkgs.nodejs;
@@ -417,10 +479,19 @@ let
         if hasAttr "installCondition" resolvedPkg && resolvedPkg.installCondition != null && (resolvedPkg.installCondition pkgs.stdenv) == false then null
         else
         let
-          drv = mkYarnPackageFromManifest_internal {
+          drv = mkYarnPackageFromPackageManifest_internal {
             inherit pkgs;
             inherit yarnManifest;
-            package = "${resolvedPkg.name}@${resolvedPkg.reference}";
+            packageManifest = resolvedPkg;
+            inherit allPackageData;
+          };
+          drvForVirtual = mkYarnPackageFromPackageManifest_internal {
+            inherit pkgs;
+            inherit yarnManifest;
+            packageManifest = resolvedPkg // {
+              dependencies = pkg.dependencies or {};
+              devDependencies = pkg.devDependencies or {};
+            };
             inherit allPackageData;
           };
         in
@@ -434,6 +505,7 @@ let
             "src" "installCondition" "dependencies" "devDependencies" "filterDependencies" "name" "reference"
           ])) resolvedPkg;
           inherit drv;
+          inherit drvForVirtual;
           packageDependencies =
             (if (hasAttr "dependencies" pkg && pkg.dependencies != null) then mapAttrs (name: depPkg:
               [ depPkg.name depPkg.reference ]

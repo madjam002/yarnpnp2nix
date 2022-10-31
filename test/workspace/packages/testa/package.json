@@ -12,6 +12,7 @@
   "dependencies": {
     "chai": "^4.3.6",
     "color": "^4.2.3",
+    "enhanced-resolve": "^5.10.0",
     "esbuild": "^0.15.10",
     "knex": "^2.3.0",
     "react-old": "npm:react@^18.2.0",
