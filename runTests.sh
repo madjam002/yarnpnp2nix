@@ -19,7 +19,7 @@ pushd $testbPackage
 $runShellEnvironmentTest/bin/testa-test
 popd
 
-nix develop .#packages.$system.testb.package -c bash <<EOF
+nix develop .#packages.$system.testb -c bash <<EOF
 cd $testbPackage
 testa-test
 EOF

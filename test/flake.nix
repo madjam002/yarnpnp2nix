@@ -5,6 +5,7 @@
     nixpkgs.url = github:nixos/nixpkgs/nixos-22.05;
     utils.url = github:gytis-ivaskevicius/flake-utils-plus;
     yarnpnp2nix.url = "../.";
+    yarnpnp2nix.inputs.nixpkgs.follows = "nixpkgs";
   };
 
   outputs = inputs@{ self, nixpkgs, utils, yarnpnp2nix }:
