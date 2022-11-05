@@ -3,6 +3,7 @@
 console.log('hello from testb 5!')
 
 // test importing various packages which will throw an exception if there are any issues with yarnpnp2nix
+require('styled-components')
 require('test-portal')
 require('react-dom')
 require('sharp')

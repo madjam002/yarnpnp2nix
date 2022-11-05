@@ -12,6 +12,11 @@
       "debug@npm:^4.1.0" = "debug@npm:4.3.4";
     };
   };
+  "@babel/traverse@npm:7.20.1" = {
+    resolutions = {
+      "debug@npm:^4.1.0" = "debug@npm:4.3.4";
+    };
+  };
   "@esbuild/android-arm@npm:0.15.10" = {
     shouldBeUnplugged = true;
     outputHash = "";

@@ -9,6 +9,7 @@
   "resolutions": {
     "open": "patch:open@npm:8.4.0#.yarn/patches/open-npm-8.4.0-df63cfe537",
     "testb/knex": "^2.0.0",
-    "testa/rimraf": "portal:./localPackageTests/test-portal"
+    "testa/rimraf": "portal:./localPackageTests/test-portal",
+    "styled-components": "5.1.0"
   }
 }

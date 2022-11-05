@@ -13,6 +13,7 @@
     "react-scheduler": "^0.1.0",
     "resolve-dir": "^1.0.1",
     "sharp": "^0.31.1",
+    "styled-components": "5.1.0",
     "test-portal": "portal:../../localPackageTests/test-portal",
     "test-tgz-redux-saga-core": "file:../../localPackageTests/test-tgz-redux-saga-core.tgz",
     "testa": "workspace:^",
@@ -25,5 +26,10 @@
     "next": "^12.3.1",
     "webpack": "^5.74.0",
     "webpack-cli": "^4.10.0"
+  },
+  "peerDependenciesMeta": {
+    "react": {
+      "optional": true
+    }
   }
 }

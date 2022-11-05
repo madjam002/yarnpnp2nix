@@ -18,6 +18,7 @@
     "knex": "^2.3.0",
     "react-old": "npm:react@^18.2.0",
     "rimraf": "portal:../../localPackageTests/test-portal",
+    "styled-components": "5.1.0",
     "teste": "workspace:^",
     "ts-configs": "workspace:^"
   },
