@@ -8,9 +8,15 @@
     "@yarnpkg/core": "^4.0.0-rc.26",
     "@yarnpkg/pnp": "^4.0.0-rc.26",
     "execa": "^6.1.0",
+    "lodash": "^4.17.21",
     "typescript": "4.9.1-beta"
   },
   "scripts": {
+    "dev": "nodemon --ignore dist --ext ts --exec 'builder build plugin && mv bundles/@yarnpkg/plugin-yarnpnp2nix.js dist/'",
     "build": "builder build plugin && mv bundles/@yarnpkg/plugin-yarnpnp2nix.js dist/"
+  },
+  "devDependencies": {
+    "@types/lodash": "^4",
+    "nodemon": "^2.0.20"
   }
 }

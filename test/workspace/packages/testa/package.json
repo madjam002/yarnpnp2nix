@@ -7,6 +7,7 @@
     "build": "node build.js"
   },
   "bin": {
+    "testa-peer-test": "./bin/testa-peer-test",
     "testa-test": "./bin/testa-test"
   },
   "dependencies": {
@@ -16,8 +17,9 @@
     "esbuild": "^0.15.10",
     "knex": "^2.3.0",
     "react-old": "npm:react@^18.2.0",
+    "rimraf": "portal:../../localPackageTests/test-portal",
     "teste": "workspace:^",
-    "testf": "workspace:^"
+    "ts-configs": "workspace:^"
   },
   "devDependencies": {
     "typescript": "^4.8.4"

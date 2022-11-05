@@ -3654,7 +3654,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"knex@npm:^2.3.0":
+"knex@npm:^2.0.0, knex@npm:^2.3.0":
   version: 2.3.0
   resolution: "knex@npm:2.3.0"
   dependencies:
@@ -4798,6 +4798,14 @@ __metadata:
   languageName: node
   linkType: hard
 
+"rimraf@portal:./localPackageTests/test-portal::locator=root-workspace-0b6124%40workspace%3A.":
+  version: 0.0.0-use.local
+  resolution: "rimraf@portal:./localPackageTests/test-portal::locator=root-workspace-0b6124%40workspace%3A."
+  dependencies:
+    isomorphic-fetch: "npm:^2.2.1"
+  languageName: node
+  linkType: soft
+
 "root-workspace-0b6124@workspace:.":
   version: 0.0.0-use.local
   resolution: "root-workspace-0b6124@workspace:."
@@ -5320,10 +5328,12 @@ __metadata:
     esbuild: "npm:^0.15.10"
     knex: "npm:^2.3.0"
     react-old: "npm:react@^18.2.0"
+    rimraf: "portal:../../localPackageTests/test-portal"
     teste: "workspace:^"
-    testf: "workspace:^"
+    ts-configs: "workspace:^"
     typescript: "npm:^4.8.4"
   bin:
+    testa-peer-test: ./bin/testa-peer-test
     testa-test: ./bin/testa-test
   languageName: unknown
   linkType: soft
@@ -5336,7 +5346,7 @@ __metadata:
     esbuild: "npm:^0.15.10"
     fsevents: "npm:^2.3.2"
     jest: "npm:^29.2.2"
-    knex: "npm:^2.3.0"
+    knex: "npm:^2.1.0"
     next: "npm:^12.3.1"
     open: "npm:8.4.0"
     pg: "npm:^8.8.0"
@@ -5387,7 +5397,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"testf@workspace:^, testf@workspace:packages/testf":
+"testf@workspace:packages/testf":
   version: 0.0.0-use.local
   resolution: "testf@workspace:packages/testf"
   languageName: unknown
@@ -5429,6 +5439,12 @@ __metadata:
   checksum: c670667f2df1c0983b48ee7e81d6013ab304f73573e9e4292233821b2219504307bedffc303c32df30813a9138114b8b084c81dea94fb68f08aca7770af98578
   languageName: node
   linkType: hard
+
+"ts-configs@workspace:^, ts-configs@workspace:packages/ts-configs":
+  version: 0.0.0-use.local
+  resolution: "ts-configs@workspace:packages/ts-configs"
+  languageName: unknown
+  linkType: soft
 
 "tslib@npm:^2.4.0":
   version: 2.4.0

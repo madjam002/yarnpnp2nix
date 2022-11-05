@@ -1,6 +1,8 @@
 const enhancedResolve = require('enhanced-resolve')
 const path = require('path')
 
+console.log('testa-test should be run from the working directory of testb package')
+
 const resolve = enhancedResolve.create.sync({
   extensions: ['.js', '.jsx', '.ts', '.tsx', '.mjs', '.css', '.scss', '.sass'],
   mainFields: ['main', 'module', 'source'],

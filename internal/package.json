@@ -1,0 +1,21 @@
+{
+  "private": true,
+  "scripts": {
+    "dev": "yarn nodemon -e ts build.js"
+  },
+  "devDependencies": {
+    "@types/node": "^18.11.9",
+    "@types/pnpapi": "^0.0.2",
+    "@yarnpkg/cli": "^4.0.0-rc.27",
+    "@yarnpkg/core": "^4.0.0-rc.27",
+    "@yarnpkg/fslib": "^3.0.0-rc.27",
+    "@yarnpkg/plugin-pnp": "^4.0.0-rc.27",
+    "@yarnpkg/pnp": "^4.0.0-rc.27",
+    "esbuild": "^0.15.13",
+    "nodemon": "^2.0.20",
+    "typescript": "^4.8.4"
+  },
+  "dependencies": {
+    "@yarnpkg/libzip": "^3.0.0-rc.27"
+  }
+}
