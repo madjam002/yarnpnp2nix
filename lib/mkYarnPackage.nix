@@ -35,7 +35,7 @@ let
       lockFile = parseYarnLock {
         inherit yarnLockJSON;
         yarnLockPath = yarnLock;
-        getResolutionsForPackage = locatorString: yarnManifest."${locatorString}".resolutions or {};
+        getManifestDataForPackage = locatorString: yarnManifest."${locatorString}" or null;
       };
       mergedPackagesByLocator = applyPackageOverrides { packagesByLocator = lockFile.packagesByLocator; inherit yarnManifest; inherit packageOverrides; };
       mergedLockFile = lockFile // {

@@ -212,21 +212,40 @@ export default {
 
         const originalPackage = project.originalPackages.get(__)
 
-        const resolutions = {}
+        const dependencies = {}
 
         Array.from(pkg.dependencies).forEach(async ([key, value]) => {
-          const originalDependency = originalPackage.dependencies.get(key)
-          if (!originalDependency) return
-
           const resolvedDevirtualisedDescriptor = structUtils.ensureDevirtualizedDescriptor(value)
-          const originalDevirtualisedDescriptor = structUtils.ensureDevirtualizedDescriptor(originalDependency)
 
-          const originalRange = structUtils.makeRange({...structUtils.parseRange(originalDevirtualisedDescriptor.range), params: null})
-          const resolvedRange = structUtils.makeRange({...structUtils.parseRange(resolvedDevirtualisedDescriptor.range), params: null})
+          const originalDependency = originalPackage.dependencies.get(key)
 
-          if (originalRange !== resolvedRange) {
-            resolutions[structUtils.stringifyDescriptor(originalDevirtualisedDescriptor)] =
-              structUtils.stringifyDescriptor(resolvedDevirtualisedDescriptor)
+          if (originalDependency != null) {
+            const originalDevirtualisedDescriptor = structUtils.ensureDevirtualizedDescriptor(originalDependency)
+
+            const originalRange = structUtils.makeRange({...structUtils.parseRange(originalDevirtualisedDescriptor.range), params: null})
+            const resolvedRange = structUtils.makeRange({...structUtils.parseRange(resolvedDevirtualisedDescriptor.range), params: null})
+
+            if (originalRange !== resolvedRange) {
+              const resolutionHash = project.storedResolutions.get(value.descriptorHash)
+              let resolvedPkg = resolutionHash != null ? project.storedPackages.get(resolutionHash) :
+                null
+              if (!resolvedPkg) {
+                console.log('failed to resolve', value)
+                return null
+              }
+              dependencies[structUtils.stringifyIdent(value)] =
+                structUtils.stringifyLocator(structUtils.ensureDevirtualizedLocator(resolvedPkg))
+            }
+          } else {
+            const resolutionHash = project.storedResolutions.get(value.descriptorHash)
+            let resolvedPkg = resolutionHash != null ? project.storedPackages.get(resolutionHash) :
+              null
+            if (!resolvedPkg) {
+              console.log('failed to resolve', value)
+              return null
+            }
+            dependencies[structUtils.stringifyIdent(value)] =
+              structUtils.stringifyLocator(resolvedPkg)
           }
         })
 
@@ -289,12 +308,12 @@ export default {
           }
         })()
 
-        if (shouldBeUnplugged || Object.keys(resolutions).length > 0) {
+        if (shouldBeUnplugged || Object.keys(dependencies).length > 0) {
           packageManifest[manifestPackageId] = {
             shouldBeUnplugged,
             outputHash,
             outputHashByPlatform,
-            resolutions,
+            dependencies,
           }
         }
       }
@@ -324,10 +343,10 @@ export default {
           }
           manifestNix.push(`    };`)
         }
-        if (pkg.resolutions && Object.keys(pkg.resolutions).length > 0) {
-          manifestNix.push(`    resolutions = {`)
-          for (const resolution of Object.keys(pkg.resolutions)) {
-            manifestNix.push(`      ${JSON.stringify(resolution)} = ${JSON.stringify(pkg.resolutions[resolution])};`)
+        if (pkg.dependencies && Object.keys(pkg.dependencies).length > 0) {
+          manifestNix.push(`    dependencies = {`)
+          for (const resolution of Object.keys(pkg.dependencies)) {
+            manifestNix.push(`      ${JSON.stringify(resolution)} = ${JSON.stringify(pkg.dependencies[resolution])};`)
           }
           manifestNix.push(`    };`)
         }

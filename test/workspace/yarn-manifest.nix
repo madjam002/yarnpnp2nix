@@ -2,19 +2,35 @@
 # It is essentially a version of yarn.lock that Nix can better understand
 # Manual changes WILL be lost - proceed with caution!
 {
+  "@apollo/protobufjs@npm:1.2.6" = {
+    shouldBeUnplugged = true;
+    outputHashByPlatform = {
+      "aarch64-darwin" = "sha512-bHEo10lTb+e+WF/5zrbKeSiuLAJmJ0J6YTC724wU58pGznJYyxoZKwW/QAQ2ltexxIH7n5RRXYqDhz50CNQ/Yg==";
+    };
+  };
   "@babel/core@npm:7.19.6" = {
-    resolutions = {
-      "debug@npm:^4.1.0" = "debug@npm:4.3.4";
+    dependencies = {
+      "debug" = "debug@npm:4.3.4";
+    };
+  };
+  "@babel/parser@npm:7.19.6" = {
+    dependencies = {
+      "@babel/types" = "@babel/types@npm:7.19.4";
+    };
+  };
+  "@babel/parser@npm:7.20.2" = {
+    dependencies = {
+      "@babel/types" = "@babel/types@npm:7.19.4";
     };
   };
   "@babel/traverse@npm:7.19.6" = {
-    resolutions = {
-      "debug@npm:^4.1.0" = "debug@npm:4.3.4";
+    dependencies = {
+      "debug" = "debug@npm:4.3.4";
     };
   };
   "@babel/traverse@npm:7.20.1" = {
-    resolutions = {
-      "debug@npm:^4.1.0" = "debug@npm:4.3.4";
+    dependencies = {
+      "debug" = "debug@npm:4.3.4";
     };
   };
   "@esbuild/android-arm@npm:0.15.10" = {
@@ -24,6 +40,11 @@
   "@esbuild/linux-loong64@npm:0.15.10" = {
     shouldBeUnplugged = true;
     outputHash = "";
+  };
+  "@mapbox/node-pre-gyp@npm:1.0.10" = {
+    dependencies = {
+      "node-fetch" = "node-fetch@npm:2.6.7";
+    };
   };
   "@next/swc-android-arm-eabi@npm:12.3.1" = {
     shouldBeUnplugged = true;
@@ -82,13 +103,28 @@
     outputHash = "";
   };
   "agent-base@npm:6.0.2" = {
-    resolutions = {
-      "debug@npm:4" = "debug@npm:4.3.4";
+    dependencies = {
+      "debug" = "debug@npm:4.3.4";
     };
   };
   "agentkeepalive@npm:4.2.1" = {
-    resolutions = {
-      "debug@npm:^4.1.0" = "debug@npm:4.3.4";
+    dependencies = {
+      "debug" = "debug@npm:4.3.4";
+    };
+  };
+  "apollo-env@npm:0.6.6" = {
+    dependencies = {
+      "node-fetch" = "node-fetch@npm:2.6.7";
+    };
+  };
+  "apollo-env@npm:0.9.2" = {
+    dependencies = {
+      "node-fetch" = "node-fetch@npm:2.6.7";
+    };
+  };
+  "apollo-server-env@npm:3.2.0" = {
+    dependencies = {
+      "node-fetch" = "node-fetch@npm:2.6.7";
     };
   };
   "canvas@npm:2.10.1" = {
@@ -96,6 +132,12 @@
     outputHashByPlatform = {
       "aarch64-darwin" = "sha512-mM5kVat75TLZDEGd4PQ23PsBq2mWSXGzCt8xaBmvyBBMlSWZI0iUAfXMXwRsMUPpOKLo27nDsoSjpEF+/ZlgNA==";
       "x86_64-linux" = "sha512-Y1CKmGQparqpkDOU54UV2Jq9xGJU8v+Y/wyh1F1YkZiYgeEvC2KMiA74kXvcHsoT0ynXHIwe2dS1ZD0RyyNwsw==";
+    };
+  };
+  "core-js@npm:3.26.0" = {
+    shouldBeUnplugged = true;
+    outputHashByPlatform = {
+      "aarch64-darwin" = "sha512-0xpUcVhsgitoHrvU7350NHr8izKoxK3YL+YoiDKg2dNk9SqUCmockyjYoDahsT1n3H0/tgok7JWsoCHLL7Phgg==";
     };
   };
   "esbuild-android-64@npm:0.15.10" = {
@@ -196,28 +238,28 @@
     };
   };
   "http-proxy-agent@npm:5.0.0" = {
-    resolutions = {
-      "debug@npm:4" = "debug@npm:4.3.4";
+    dependencies = {
+      "debug" = "debug@npm:4.3.4";
     };
   };
   "https-proxy-agent@npm:5.0.1" = {
-    resolutions = {
-      "debug@npm:4" = "debug@npm:4.3.4";
+    dependencies = {
+      "debug" = "debug@npm:4.3.4";
     };
   };
   "istanbul-lib-source-maps@npm:4.0.1" = {
-    resolutions = {
-      "debug@npm:^4.1.1" = "debug@npm:4.3.4";
+    dependencies = {
+      "debug" = "debug@npm:4.3.4";
     };
   };
   "jest-haste-map@npm:29.2.1" = {
-    resolutions = {
-      "fsevents@npm:^2.3.2" = "fsevents@patch:fsevents@npm%3A^2.3.2#optional!builtin<compat/fsevents>";
+    dependencies = {
+      "fsevents" = "fsevents@patch:fsevents@npm%3A2.3.2#optional!builtin<compat/fsevents>::version=2.3.2&hash=18f3a7";
     };
   };
   "jest-resolve@npm:29.2.2" = {
-    resolutions = {
-      "resolve@npm:^1.20.0" = "resolve@patch:resolve@npm%3A^1.20.0#optional!builtin<compat/resolve>";
+    dependencies = {
+      "resolve" = "resolve@patch:resolve@npm%3A1.22.1#optional!builtin<compat/resolve>::version=1.22.1&hash=07638b";
     };
   };
   "nan@npm:2.17.0" = {
@@ -249,13 +291,13 @@
     };
   };
   "rechoir@npm:0.7.1" = {
-    resolutions = {
-      "resolve@npm:^1.9.0" = "resolve@patch:resolve@npm%3A^1.9.0#optional!builtin<compat/resolve>";
+    dependencies = {
+      "resolve" = "resolve@patch:resolve@npm%3A1.22.1#optional!builtin<compat/resolve>::version=1.22.1&hash=07638b";
     };
   };
   "rechoir@npm:0.8.0" = {
-    resolutions = {
-      "resolve@npm:^1.20.0" = "resolve@patch:resolve@npm%3A^1.20.0#optional!builtin<compat/resolve>";
+    dependencies = {
+      "resolve" = "resolve@patch:resolve@npm%3A1.22.1#optional!builtin<compat/resolve>::version=1.22.1&hash=07638b";
     };
   };
   "sharp@npm:0.31.1" = {
@@ -266,21 +308,26 @@
     };
   };
   "socks-proxy-agent@npm:7.0.0" = {
-    resolutions = {
-      "debug@npm:^4.3.3" = "debug@npm:4.3.4";
+    dependencies = {
+      "debug" = "debug@npm:4.3.4";
+    };
+  };
+  "styled-components@npm:5.1.0" = {
+    dependencies = {
+      "react-is" = "react-is@npm:18.2.0";
     };
   };
   "testa@workspace:packages/testa" = {
-    resolutions = {
-      "rimraf@portal:../../localPackageTests/test-portal" = "rimraf@portal:./localPackageTests/test-portal::locator=root-workspace-0b6124%40workspace%3A.";
-      "typescript@npm:^4.8.4" = "typescript@patch:typescript@npm%3A^4.8.4#optional!builtin<compat/typescript>";
+    dependencies = {
+      "rimraf" = "rimraf@portal:./localPackageTests/test-portal::locator=root-workspace-0b6124%40workspace%3A.";
+      "typescript" = "typescript@patch:typescript@npm%3A4.8.4#optional!builtin<compat/typescript>::version=4.8.4&hash=701156";
     };
   };
   "testb@workspace:packages/testb" = {
-    resolutions = {
-      "fsevents@npm:^2.3.2" = "fsevents@patch:fsevents@npm%3A^2.3.2#optional!builtin<compat/fsevents>";
-      "open@npm:8.4.0" = "open@patch:open@npm:8.4.0#.yarn/patches/open-npm-8.4.0-df63cfe537::locator=root-workspace-0b6124%40workspace%3A.";
-      "knex@npm:^2.1.0" = "knex@npm:^2.0.0";
+    dependencies = {
+      "fsevents" = "fsevents@patch:fsevents@npm%3A2.3.2#optional!builtin<compat/fsevents>::version=2.3.2&hash=18f3a7";
+      "open" = "open@patch:open@npm%3A8.4.0#.yarn/patches/open-npm-8.4.0-df63cfe537::version=8.4.0&hash=e6ee73&locator=root-workspace-0b6124%40workspace%3A.";
+      "knex" = "knex@npm:2.3.0";
     };
   };
 }

@@ -85,7 +85,7 @@ in
   yarnLockJSON,
   yarnLockPath,
   findRelatedPackages ? findRelatedPackagesDefault,
-  getResolutionsForPackage ? (locatorString: {}),
+  getManifestDataForPackage ? (locatorString: {}),
 }:
 let
   yarnLockRootDirectory =
@@ -128,26 +128,14 @@ let
 
   rewriteDependenciesToResolvedLocators = locatorString: dependencies:
     pipe dependencies [
-      (mapAttrs (dependencyName: dependencyRange:
+      (mapAttrs (dependencyName: dependencyRangeOrLocatorString:
         let
-          resolutions = getResolutionsForPackage locatorString;
-          descriptorRaw = resolutions."${dependencyName}@${dependencyRange}" or null;
           locatorBinding = "::locator=${encodeUri locatorString}";
+          descriptorRaw = null;
         in
-        if descriptorRaw == null then
-          (byDescriptorAttrs."${dependencyName}@${dependencyRange}".resolution or
-            byDescriptorAttrs."${dependencyName}@${dependencyRange}${locatorBinding}".resolution)
-        else
-          let
-            descriptor = if descriptorRaw != null then parseDescriptor descriptorRaw else null;
-            descriptor' = if descriptor != null then (descriptor // {
-              range = removeBindingFromRange descriptor.range;
-            }) else null;
-            descriptorString = if descriptor' != null then stringifyDescriptor descriptor' else "";
-            resolution = byDescriptorAttrs.${descriptorString}.resolution or
-              (throw "Missing descriptor in lockfile for ${dependencyName}@${dependencyRange} (tried to find ${descriptorString}) - you're probably using package.json resolutions, in which case you need to install the yarnpnp2nix Yarn plugin or manually pass resolutions in packageOverrides");
-          in
-          stringifyLocator (parseLocator resolution)
+        byDescriptorAttrs."${dependencyName}@${dependencyRangeOrLocatorString}".resolution or
+        byDescriptorAttrs."${dependencyName}@${dependencyRangeOrLocatorString}${locatorBinding}".resolution or
+        dependencyRangeOrLocatorString
       ))
       (filterAttrs (key: value: value != null))
     ];
@@ -168,10 +156,14 @@ let
         # (this is fine, as remote packages published to NPM have their devDependencies stripped already)
         packageJSON = if src != null && !isSourceArchive then builtins.fromJSON (builtins.readFile "${src}/package.json") else null;
 
+        packageInManifest = getManifestDataForPackage locatorString;
+
         devDependenciesKeys = attrNames (packageJSON.devDependencies or {});
 
-        packageDependencies = filterAttrs (key: __: !(elem key devDependenciesKeys)) (package.dependencies or {});
-        packageDevDependencies = filterAttrs (key: __: (elem key devDependenciesKeys)) (package.dependencies or {});
+        _packageDependencies = (package.dependencies or {}) // (packageInManifest.dependencies or {});
+
+        packageDependencies = filterAttrs (key: __: !(elem key devDependenciesKeys)) _packageDependencies;
+        packageDevDependencies = filterAttrs (key: __: (elem key devDependenciesKeys)) _packageDependencies;
 
         packageByLocator = (filterAttrs (key: value: key != "resolution" && key != "checksum" && key != "conditions") package) // {
           inherit locator;
