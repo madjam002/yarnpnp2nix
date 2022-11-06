@@ -7,19 +7,26 @@
     "build": "node build.js"
   },
   "bin": {
+    "testa-peer-test": "./bin/testa-peer-test",
     "testa-test": "./bin/testa-test"
   },
   "dependencies": {
+    "apollo-server-core": "npm:2.9.14",
     "chai": "^4.3.6",
     "color": "^4.2.3",
     "enhanced-resolve": "^5.10.0",
     "esbuild": "^0.15.10",
+    "graphql": "^16.6.0",
     "knex": "^2.3.0",
     "react-old": "npm:react@^18.2.0",
+    "rimraf": "portal:../../localPackageTests/test-portal",
+    "styled-components": "5.1.0",
+    "subscriptions-transport-ws": "^0.11.0",
     "teste": "workspace:^",
-    "testf": "workspace:^"
+    "ts-configs": "workspace:^"
   },
   "devDependencies": {
+    "@types/node": "^18.11.9",
     "typescript": "^4.8.4"
   }
 }

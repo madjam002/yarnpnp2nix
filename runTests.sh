@@ -6,8 +6,13 @@ system="$(nix eval --impure --json --expr builtins.currentSystem | jq -r)"
 
 pushd test
 
+nix eval --json .#packages.aarch64-darwin.testa.transitiveRuntimePackages
+
 nix build -L .#packages.$system.testb
 ./result/bin/testb
+
+nix build -L .#packages.$system.testa
+./result/bin/testa-peer-test
 
 nix build -L .#packages.$system.testb.package
 testbPackage=$(realpath ./result)/node_modules/testb

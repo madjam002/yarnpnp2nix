@@ -23,7 +23,9 @@
           yarn-plugin = pkgs.callPackage ./yarnPlugin.nix {};
         };
         lib = {
-          mkYarnPackagesFromManifest = (import ./lib/mkYarnPackage.nix { defaultPkgs = pkgs; lib = pkgs.lib; }).mkYarnPackagesFromManifest;
+          mkYarnPackagesFromLockFile = (import ./lib/mkYarnPackage.nix { defaultPkgs = pkgs; lib = pkgs.lib; }).mkYarnPackagesFromLockFile;
+          fromYAML = (import ./lib/fromYAML.nix { lib = pkgs.lib; });
+          parseYarnLock = (import ./lib/parseYarnLock.nix { lib = pkgs.lib; });
         };
         devShell = import ./shell.nix {
           inherit pkgs;
