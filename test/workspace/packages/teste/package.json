@@ -1,6 +1,9 @@
 {
   "name": "teste",
   "version": "0.0.0",
+  "dependencies": {
+    "react-is": "^18.2.0"
+  },
   "devDependencies": {
     "jest": "^29.2.2"
   },

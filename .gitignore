@@ -5,3 +5,4 @@ result
 .pnp.loader.mjs
 **/.yarn/unplugged
 **/.yarn/install-state.gz
+tsconfig.tsbuildinfo

@@ -28,7 +28,7 @@ let
       flatName = "code-frame";
       languageName = "node";
       scope = "babel";
-      descriptorRange = "npm:^7.12.13";
+      descriptorRange = "npm:^7.18.6";
       checksum = "9/eb27d165ea1c7c23e71a2a6f64225fe0ca0b2a39f5c0b57fda2a62dfa845799ca94886b08014f8fd4a711538cc6b1c89b9fc1dca6a5148893932bc03412ca848";
       dependencies = {
         "@babel/highlight" = packages."@babel/highlight@npm:7.18.6";
@@ -90,6 +90,38 @@ let
         "@babel/types" = packages."@babel/types@npm:7.19.4";
         "@jridgewell/gen-mapping" = packages."@jridgewell/gen-mapping@npm:0.3.2";
         "jsesc" = packages."jsesc@npm:2.5.2";
+      };
+    };
+    "@babel/generator@npm:7.20.2" = {
+      name = "@babel/generator";
+      reference = "npm:7.20.2";
+      linkType = "HARD";
+      outputName = "babel-generator-7.20.2-1b9ba34fba";
+      outputHash = "a0ef272b4074f85865e53e0c0061a8e2fbc1e57ca121a94a9838edf47300640be0ecd752beb0dcd13ba145a4c311cdfa59ea2c6d6ac28fdd9a5f1d5661bcfe4b";
+      flatName = "generator";
+      languageName = "node";
+      scope = "babel";
+      descriptorRange = "npm:^7.20.1";
+      checksum = "9/a0ef272b4074f85865e53e0c0061a8e2fbc1e57ca121a94a9838edf47300640be0ecd752beb0dcd13ba145a4c311cdfa59ea2c6d6ac28fdd9a5f1d5661bcfe4b";
+      dependencies = {
+        "@babel/types" = packages."@babel/types@npm:7.20.2";
+        "@jridgewell/gen-mapping" = packages."@jridgewell/gen-mapping@npm:0.3.2";
+        "jsesc" = packages."jsesc@npm:2.5.2";
+      };
+    };
+    "@babel/helper-annotate-as-pure@npm:7.18.6" = {
+      name = "@babel/helper-annotate-as-pure";
+      reference = "npm:7.18.6";
+      linkType = "HARD";
+      outputName = "babel-helper-annotate-as-pure-7.18.6-36e25293d8";
+      outputHash = "1fcc8f0e9377623a19e00de620391dba3e0343d82ae2142eb7c94b10d6dbddafc201a7a84d1d9ce45ec82291b887f9d85b83d53a50850cdf1b07cee79de554b9";
+      flatName = "helper-annotate-as-pure";
+      languageName = "node";
+      scope = "babel";
+      descriptorRange = "npm:^7.16.0";
+      checksum = "9/1fcc8f0e9377623a19e00de620391dba3e0343d82ae2142eb7c94b10d6dbddafc201a7a84d1d9ce45ec82291b887f9d85b83d53a50850cdf1b07cee79de554b9";
+      dependencies = {
+        "@babel/types" = packages."@babel/types@npm:7.19.4";
       };
     };
     "@babel/helper-compilation-targets@npm:7.19.3" = {
@@ -178,7 +210,7 @@ let
       flatName = "helper-module-imports";
       languageName = "node";
       scope = "babel";
-      descriptorRange = "npm:^7.18.6";
+      descriptorRange = "npm:^7.0.0";
       checksum = "9/5c2d1987e4854abe7ca227d2e318b699c100dedc8ec45fe858755d5e9da8760ac136c0b1e669cc381f44eb79607b6f4ffcf7642e1aa84504389f9ca6065e8ee1";
       dependencies = {
         "@babel/types" = packages."@babel/types@npm:7.19.4";
@@ -269,7 +301,7 @@ let
       flatName = "helper-validator-identifier";
       languageName = "node";
       scope = "babel";
-      descriptorRange = "npm:^7.18.6";
+      descriptorRange = "npm:^7.19.1";
       checksum = "9/089fdf605ee8dfa3004cd84c69e655ff9ab8bdb4e7fa02bf0012db728c6247acb599ca1118d2f9124d7b417fc5793ee348f2da8bc64be230b3b13ba7cd4364cc";
     };
     "@babel/helper-validator-option@npm:7.18.6" = {
@@ -327,8 +359,26 @@ let
       flatName = "parser";
       languageName = "node";
       scope = "babel";
-      descriptorRange = "npm:^7.19.6";
+      descriptorRange = "npm:^7.18.10";
       checksum = "9/9e03aeb28629efb0edc64a19849c3a69d7c26a0fb39534650139a1569993c91f2748e609e5fdc4f80856bdaf24eec6508f092bfe7b97f20477581d0729e6e3c6";
+      bin = {
+        "parser" = "./bin/babel-parser.js";
+      };
+      dependencies = {
+        "@babel/types" = packages."@babel/types@npm:7.19.4";
+      };
+    };
+    "@babel/parser@npm:7.20.2" = {
+      name = "@babel/parser";
+      reference = "npm:7.20.2";
+      linkType = "HARD";
+      outputName = "babel-parser-7.20.2-7a53e6802e";
+      outputHash = "9f59f8cda61a39a7a57b0dfdbb9ea10e1d5417480050f7a0285997408b8b3716c5afc64b6b3ab173eb75fe9e9d3c5bdf8c2962bad83ef0fa69e6ae57795e52c1";
+      flatName = "parser";
+      languageName = "node";
+      scope = "babel";
+      descriptorRange = "npm:^7.20.1";
+      checksum = "9/9f59f8cda61a39a7a57b0dfdbb9ea10e1d5417480050f7a0285997408b8b3716c5afc64b6b3ab173eb75fe9e9d3c5bdf8c2962bad83ef0fa69e6ae57795e52c1";
       bin = {
         "parser" = "./bin/babel-parser.js";
       };
@@ -904,6 +954,30 @@ let
         "debug" = packages."debug@virtual:113ef2a03aa3de337889da32b02d27edf5e95d2b3c50aaf8ade4848a62355b637cece6c5a2b0f14480eef0d6c8ed8e9cacaca7d39e60125049f7120bdbeb5489#npm:4.3.4";
       };
     };
+    "@babel/traverse@npm:7.20.1" = {
+      name = "@babel/traverse";
+      reference = "npm:7.20.1";
+      linkType = "HARD";
+      outputName = "babel-traverse-7.20.1-569a25513a";
+      outputHash = "bf0f6f6e5481188632993335e40c70794db9f80d9229316002aad3a0f002d27a5b8de69bcaec07901a670f20aba73ec2a3787d24284c2a8421b979a9f365a654";
+      flatName = "traverse";
+      languageName = "node";
+      scope = "babel";
+      descriptorRange = "npm:^7.4.5";
+      checksum = "9/bf0f6f6e5481188632993335e40c70794db9f80d9229316002aad3a0f002d27a5b8de69bcaec07901a670f20aba73ec2a3787d24284c2a8421b979a9f365a654";
+      dependencies = {
+        "@babel/code-frame" = packages."@babel/code-frame@npm:7.18.6";
+        "@babel/generator" = packages."@babel/generator@npm:7.20.2";
+        "@babel/helper-environment-visitor" = packages."@babel/helper-environment-visitor@npm:7.18.9";
+        "@babel/helper-function-name" = packages."@babel/helper-function-name@npm:7.19.0";
+        "@babel/helper-hoist-variables" = packages."@babel/helper-hoist-variables@npm:7.18.6";
+        "@babel/helper-split-export-declaration" = packages."@babel/helper-split-export-declaration@npm:7.18.6";
+        "@babel/parser" = packages."@babel/parser@npm:7.20.2";
+        "@babel/types" = packages."@babel/types@npm:7.20.2";
+        "globals" = packages."globals@npm:11.12.0";
+        "debug" = packages."debug@virtual:113ef2a03aa3de337889da32b02d27edf5e95d2b3c50aaf8ade4848a62355b637cece6c5a2b0f14480eef0d6c8ed8e9cacaca7d39e60125049f7120bdbeb5489#npm:4.3.4";
+      };
+    };
     "@babel/types@npm:7.19.4" = {
       name = "@babel/types";
       reference = "npm:7.19.4";
@@ -913,8 +987,25 @@ let
       flatName = "types";
       languageName = "node";
       scope = "babel";
-      descriptorRange = "npm:^7.3.3";
+      descriptorRange = "npm:^7.18.6";
       checksum = "9/2c67b2f2fac78e54b2dc51bb475bd1ee7d31bbd9947ac9c4f5b127a47b2e996eb0d809b89b435afb8c2029ebbf1443c2e458f92ef85757e4b2d5a3861c8f3716";
+      dependencies = {
+        "@babel/helper-string-parser" = packages."@babel/helper-string-parser@npm:7.19.4";
+        "@babel/helper-validator-identifier" = packages."@babel/helper-validator-identifier@npm:7.19.1";
+        "to-fast-properties" = packages."to-fast-properties@npm:2.0.0";
+      };
+    };
+    "@babel/types@npm:7.20.2" = {
+      name = "@babel/types";
+      reference = "npm:7.20.2";
+      linkType = "HARD";
+      outputName = "babel-types-7.20.2-0e6581f12d";
+      outputHash = "f6486668e3ba098ca4460ee833656cca392657cb985103794c2f8f890e6301b35a9286e8cc5d2a82617333eb32ea2c89d40a3a6c5eb063facdd0bc79fd2d2344";
+      flatName = "types";
+      languageName = "node";
+      scope = "babel";
+      descriptorRange = "npm:^7.20.0";
+      checksum = "9/f6486668e3ba098ca4460ee833656cca392657cb985103794c2f8f890e6301b35a9286e8cc5d2a82617333eb32ea2c89d40a3a6c5eb063facdd0bc79fd2d2344";
       dependencies = {
         "@babel/helper-string-parser" = packages."@babel/helper-string-parser@npm:7.19.4";
         "@babel/helper-validator-identifier" = packages."@babel/helper-validator-identifier@npm:7.19.1";
@@ -944,6 +1035,57 @@ let
       scope = "discoveryjs";
       descriptorRange = "npm:^0.5.0";
       checksum = "9/b6e8ff9be2e0b505f3e06379743f55d04028adbb0170dc191ff020f6e43f86f712e6cceb8a95db7e2c13a7dc6d7419f6b65af353ce662bf520e065b69e232ef7";
+    };
+    "@emotion/is-prop-valid@npm:0.8.8" = {
+      name = "@emotion/is-prop-valid";
+      reference = "npm:0.8.8";
+      linkType = "HARD";
+      outputName = "emotion-is-prop-valid-0.8.8-261a0f2426";
+      outputHash = "2709fd849da334055e4bb29724647af73209a3e7f274ff3ad24d55e244747ade89daf4526bf541837559adb271f70ad26c60d311f51c4bdcc8728e6b14eb3d18";
+      flatName = "is-prop-valid";
+      languageName = "node";
+      scope = "emotion";
+      descriptorRange = "npm:^0.8.8";
+      checksum = "9/2709fd849da334055e4bb29724647af73209a3e7f274ff3ad24d55e244747ade89daf4526bf541837559adb271f70ad26c60d311f51c4bdcc8728e6b14eb3d18";
+      dependencies = {
+        "@emotion/memoize" = packages."@emotion/memoize@npm:0.7.4";
+      };
+    };
+    "@emotion/memoize@npm:0.7.4" = {
+      name = "@emotion/memoize";
+      reference = "npm:0.7.4";
+      linkType = "HARD";
+      outputName = "emotion-memoize-0.7.4-5648cf11b8";
+      outputHash = "6ea6add503898a3ffa90d549c7d841ba31652a37fd12c1517574d7aebcfa7735583489ff0678e28626e33c34f701cb1e9ced71dd4684cb8d43efc054f11bcaff";
+      flatName = "memoize";
+      languageName = "node";
+      scope = "emotion";
+      descriptorRange = "npm:0.7.4";
+      checksum = "9/6ea6add503898a3ffa90d549c7d841ba31652a37fd12c1517574d7aebcfa7735583489ff0678e28626e33c34f701cb1e9ced71dd4684cb8d43efc054f11bcaff";
+    };
+    "@emotion/stylis@npm:0.8.5" = {
+      name = "@emotion/stylis";
+      reference = "npm:0.8.5";
+      linkType = "HARD";
+      outputName = "emotion-stylis-0.8.5-3e9db8959f";
+      outputHash = "0368ecbfbe358fa2f9ed9f2b550da23a50e92661c706df744e3d586e1c3db7cb2de96cc324659b2678c17ab30d7be0c53bb54b9a6fc0326f3bdc4991edd48724";
+      flatName = "stylis";
+      languageName = "node";
+      scope = "emotion";
+      descriptorRange = "npm:^0.8.4";
+      checksum = "9/0368ecbfbe358fa2f9ed9f2b550da23a50e92661c706df744e3d586e1c3db7cb2de96cc324659b2678c17ab30d7be0c53bb54b9a6fc0326f3bdc4991edd48724";
+    };
+    "@emotion/unitless@npm:0.7.5" = {
+      name = "@emotion/unitless";
+      reference = "npm:0.7.5";
+      linkType = "HARD";
+      outputName = "emotion-unitless-0.7.5-14e1171640";
+      outputHash = "7d85f5dfc8b5b394e3a0c35400ba96afb4e6160473f5e0a88d2b5eb3657b69341c65a5f4913f5a61b578ce4a210247f484b947af3f44f7ebeb6d936956652e14";
+      flatName = "unitless";
+      languageName = "node";
+      scope = "emotion";
+      descriptorRange = "npm:^0.7.4";
+      checksum = "9/7d85f5dfc8b5b394e3a0c35400ba96afb4e6160473f5e0a88d2b5eb3657b69341c65a5f4913f5a61b578ce4a210247f484b947af3f44f7ebeb6d936956652e14";
     };
     "@esbuild/android-arm@npm:0.15.10" = {
       name = "@esbuild/android-arm";
@@ -1417,7 +1559,7 @@ let
       flatName = "gen-mapping";
       languageName = "node";
       scope = "jridgewell";
-      descriptorRange = "npm:^0.3.0";
+      descriptorRange = "npm:^0.3.2";
       checksum = "9/b2c9c60a0de99e3cb296a90ef949c422537dce3c39f2b9c0451549a4b0eaecd58290c0e1ddc75538f38073dd477b728dedf3493f25c253946fcd52b0af06e561";
       dependencies = {
         "@jridgewell/set-array" = packages."@jridgewell/set-array@npm:1.1.2";
@@ -1474,7 +1616,7 @@ let
       flatName = "sourcemap-codec";
       languageName = "node";
       scope = "jridgewell";
-      descriptorRange = "npm:1.4.14";
+      descriptorRange = "npm:^1.4.10";
       checksum = "9/2147ea75c966fed8a7d9ed6679b7e8c380fa790a9bea5a64f4ec1c26d24e44b461aa60fc3b228cea03a46708d9d1bcf19508035bf27ad5e8f63d0998ed1d1117";
     };
     "@jridgewell/trace-mapping@npm:0.3.17" = {
@@ -2074,6 +2216,18 @@ let
       descriptorRange = "npm:*";
       checksum = "9/6a2d877520bf66640365f507b8eab8039bf8edb46ca94c8fb01a20074837af7cb8042194bb8b89771f3c7dec254860bf421fa058fa2e2d239372056aa421c6ee";
     };
+    "@types/node@npm:18.11.9" = {
+      name = "@types/node";
+      reference = "npm:18.11.9";
+      linkType = "HARD";
+      outputName = "types-node-18.11.9-d21dd6ec05";
+      outputHash = "7b7d90894dd1ae9b6836e49ace5bdea55cc08806a508e38851e333f1ad77ec81ea6dca58e6a2444ad0471fee965b9908cc1ef06028eebca9c20d54729df98bab";
+      flatName = "node";
+      languageName = "node";
+      scope = "types";
+      descriptorRange = "npm:^18.11.9";
+      checksum = "9/7b7d90894dd1ae9b6836e49ace5bdea55cc08806a508e38851e333f1ad77ec81ea6dca58e6a2444ad0471fee965b9908cc1ef06028eebca9c20d54729df98bab";
+    };
     "@types/prettier@npm:2.7.1" = {
       name = "@types/prettier";
       reference = "npm:2.7.1";
@@ -2097,6 +2251,21 @@ let
       scope = "types";
       descriptorRange = "npm:^2.0.0";
       checksum = "9/a961a1d043517a2b6f7fc326fbce12cd3ba4a8dfc87b63ef2aa7cd991f6a8c7bc87942a51a792c3f922e34e3898d9de3139f2f6636a326a7ec4635389b822bd9";
+    };
+    "@types/ws@npm:8.5.3" = {
+      name = "@types/ws";
+      reference = "npm:8.5.3";
+      linkType = "HARD";
+      outputName = "types-ws-8.5.3-ae52c483f1";
+      outputHash = "079fdee163d7cb86d59e5379d2ea6511ba6a46210af420320a4bd52b04b06f86d2c3acc89289f5eae16c8815a562faada8c717fd55a4888c8a5a5f8ce1420112";
+      flatName = "ws";
+      languageName = "node";
+      scope = "types";
+      descriptorRange = "npm:^8.5.3";
+      checksum = "9/079fdee163d7cb86d59e5379d2ea6511ba6a46210af420320a4bd52b04b06f86d2c3acc89289f5eae16c8815a562faada8c717fd55a4888c8a5a5f8ce1420112";
+      dependencies = {
+        "@types/node" = packages."@types/node@npm:18.11.5";
+      };
     };
     "@types/yargs-parser@npm:21.0.0" = {
       name = "@types/yargs-parser";
@@ -2840,6 +3009,67 @@ let
         "@types/babel__traverse" = packages."@types/babel__traverse@npm:7.18.2";
       };
     };
+    "babel-plugin-styled-components@npm:2.0.7" = {
+      name = "babel-plugin-styled-components";
+      reference = "npm:2.0.7";
+      linkType = "HARD";
+      outputName = "babel-plugin-styled-components-2.0.7-543710bd48";
+      outputHash = "d18be8e9050d64c83408d980b3e46a75ba406a85321567c9253ec2fc755b7d9ba6e04c2c3d555b68b7aeb8a947cf235e36904ad6aca08617332c0fd38bea2fff";
+      flatName = "babel-plugin-styled-components";
+      languageName = "node";
+      scope = null;
+      descriptorRange = "npm:>= 1";
+      checksum = "9/d18be8e9050d64c83408d980b3e46a75ba406a85321567c9253ec2fc755b7d9ba6e04c2c3d555b68b7aeb8a947cf235e36904ad6aca08617332c0fd38bea2fff";
+      dependencies = {
+        "@babel/helper-annotate-as-pure" = packages."@babel/helper-annotate-as-pure@npm:7.18.6";
+        "@babel/helper-module-imports" = packages."@babel/helper-module-imports@npm:7.18.6";
+        "babel-plugin-syntax-jsx" = packages."babel-plugin-syntax-jsx@npm:6.18.0";
+        "lodash" = packages."lodash@npm:4.17.21";
+        "picomatch" = packages."picomatch@npm:2.3.1";
+      };
+      packagePeers = [
+        "@types/styled-components"
+        "styled-components"
+      ];
+    };
+    "babel-plugin-styled-components@virtual:8068c5cec940e8f589389e662e1222f56535f0d3bf414b6eda6b8dc84f0a160ebb853fa4364d75c871ea48c6ef583c72328cb2796ac9e605c1c7affd2dfceca6#npm:2.0.7" = {
+      name = "babel-plugin-styled-components";
+      reference = "virtual:8068c5cec940e8f589389e662e1222f56535f0d3bf414b6eda6b8dc84f0a160ebb853fa4364d75c871ea48c6ef583c72328cb2796ac9e605c1c7affd2dfceca6#npm:2.0.7";
+      canonicalPackage = packages."babel-plugin-styled-components@npm:2.0.7";
+      dependencies = {
+        "@babel/helper-annotate-as-pure" = packages."@babel/helper-annotate-as-pure@npm:7.18.6";
+        "@babel/helper-module-imports" = packages."@babel/helper-module-imports@npm:7.18.6";
+        "babel-plugin-syntax-jsx" = packages."babel-plugin-syntax-jsx@npm:6.18.0";
+        "lodash" = packages."lodash@npm:4.17.21";
+        "picomatch" = packages."picomatch@npm:2.3.1";
+        "styled-components" = packages."styled-components@virtual:873621ee06b4625ead2be11f2d77ba70a136cc274552602a099052f59522f7193183c2fe44bd5a376d2f62cece35edf18f6bbeac7390077ea336f092796c7037#npm:5.1.0";
+      };
+    };
+    "babel-plugin-styled-components@virtual:a60ee67777e3a4dec4000b9ce9a2be872437b9757c065d396235f717dc6148ffdc59fbe6d8e5782eaf31ed07f4a94a33e7c1bcf5b52a99fc87904220f225aba0#npm:2.0.7" = {
+      name = "babel-plugin-styled-components";
+      reference = "virtual:a60ee67777e3a4dec4000b9ce9a2be872437b9757c065d396235f717dc6148ffdc59fbe6d8e5782eaf31ed07f4a94a33e7c1bcf5b52a99fc87904220f225aba0#npm:2.0.7";
+      canonicalPackage = packages."babel-plugin-styled-components@npm:2.0.7";
+      dependencies = {
+        "@babel/helper-annotate-as-pure" = packages."@babel/helper-annotate-as-pure@npm:7.18.6";
+        "@babel/helper-module-imports" = packages."@babel/helper-module-imports@npm:7.18.6";
+        "babel-plugin-syntax-jsx" = packages."babel-plugin-syntax-jsx@npm:6.18.0";
+        "lodash" = packages."lodash@npm:4.17.21";
+        "picomatch" = packages."picomatch@npm:2.3.1";
+        "styled-components" = packages."styled-components@virtual:819008c351efcab39edaca3aff41825a322b497036fdaae27b5fba418f7e250764dbabc64de345136bce5b73e5ae95b76973a2b3591d90edde6160b93c624974#npm:5.1.0";
+      };
+    };
+    "babel-plugin-syntax-jsx@npm:6.18.0" = {
+      name = "babel-plugin-syntax-jsx";
+      reference = "npm:6.18.0";
+      linkType = "HARD";
+      outputName = "babel-plugin-syntax-jsx-6.18.0-fcf0a98a71";
+      outputHash = "dd37d9280c365776040a84b8191e3d39cb3e916d34e05af7065d5df921422cbf56a143dac97a5e2e98c08e7b979f453d126fe58433ac8fdec0e1dd79f47b4b08";
+      flatName = "babel-plugin-syntax-jsx";
+      languageName = "node";
+      scope = null;
+      descriptorRange = "npm:^6.18.0";
+      checksum = "9/dd37d9280c365776040a84b8191e3d39cb3e916d34e05af7065d5df921422cbf56a143dac97a5e2e98c08e7b979f453d126fe58433ac8fdec0e1dd79f47b4b08";
+    };
     "babel-preset-current-node-syntax@npm:1.0.1" = {
       name = "babel-preset-current-node-syntax";
       reference = "npm:1.0.1";
@@ -2941,6 +3171,18 @@ let
         "babel-plugin-jest-hoist" = packages."babel-plugin-jest-hoist@npm:29.2.0";
         "babel-preset-current-node-syntax" = packages."babel-preset-current-node-syntax@virtual:cbeda26b7a469af5b5a4aeed0acd3b68a4655c00415b382aed941c15bddb3859da189c8bed48e00cc98cfc4ee5f0715eccde6e48160e8111b436752f7ac9880a#npm:1.0.1";
       };
+    };
+    "backo2@npm:1.0.2" = {
+      name = "backo2";
+      reference = "npm:1.0.2";
+      linkType = "HARD";
+      outputName = "backo2-1.0.2-e933aab18a";
+      outputHash = "8932a377a3f68c628ac26048074f8bb16389b9400ef6399f64aa6cf74063dbe5441cc08b87fc79f4fda7db7d55b7691377557d4278c8cfcdd39a52416a5270b2";
+      flatName = "backo2";
+      languageName = "node";
+      scope = null;
+      descriptorRange = "npm:^1.0.2";
+      checksum = "9/8932a377a3f68c628ac26048074f8bb16389b9400ef6399f64aa6cf74063dbe5441cc08b87fc79f4fda7db7d55b7691377557d4278c8cfcdd39a52416a5270b2";
     };
     "balanced-match@npm:1.0.2" = {
       name = "balanced-match";
@@ -3173,6 +3415,18 @@ let
       descriptorRange = "npm:^6.2.0";
       checksum = "9/3c802157fc61af58194ed056d1830444ec1268a556bb90c7a3a729db481a897cbfdf86fb9db91b45b5e3b891183024e13bf26c866e8e5a37853ace6fa01b7be1";
     };
+    "camelize@npm:1.0.1" = {
+      name = "camelize";
+      reference = "npm:1.0.1";
+      linkType = "HARD";
+      outputName = "camelize-1.0.1-d86ebe085a";
+      outputHash = "358df2a4ab72e6c24b55da656c7ccd3a3ade787ab53d381a65b2dcac15436c6082bd278a0477cb21f1bd273927733fd25f049d0b52d3cc68e8c606e77297996c";
+      flatName = "camelize";
+      languageName = "node";
+      scope = null;
+      descriptorRange = "npm:^1.0.0";
+      checksum = "9/358df2a4ab72e6c24b55da656c7ccd3a3ade787ab53d381a65b2dcac15436c6082bd278a0477cb21f1bd273927733fd25f049d0b52d3cc68e8c606e77297996c";
+    };
     "caniuse-lite@npm:1.0.30001418" = {
       name = "caniuse-lite";
       reference = "npm:1.0.30001418";
@@ -3203,7 +3457,8 @@ let
       linkType = "HARD";
       outputName = "canvas-2.10.1-2f4cd381e7";
       outputHashByPlatform = {
-        "aarch64-darwin" = "sha512-ONnMZtERXYzvB0Vwg9dIe7KqbqyGqwUZfnP1iroDlozhUcd/a4UaQKUaycxSH0H3pyWthHY0F//GWtnb6WWYhg==";
+        "aarch64-darwin" = "sha512-mM5kVat75TLZDEGd4PQ23PsBq2mWSXGzCt8xaBmvyBBMlSWZI0iUAfXMXwRsMUPpOKLo27nDsoSjpEF+/ZlgNA==";
+        "x86_64-linux" = "sha512-Y1CKmGQparqpkDOU54UV2Jq9xGJU8v+Y/wyh1F1YkZiYgeEvC2KMiA74kXvcHsoT0ynXHIwe2dS1ZD0RyyNwsw==";
       };
       shouldBeUnplugged = true;
       flatName = "canvas";
@@ -3626,6 +3881,35 @@ let
         "path-key" = packages."path-key@npm:3.1.1";
         "shebang-command" = packages."shebang-command@npm:2.0.0";
         "which" = packages."which@npm:2.0.2";
+      };
+    };
+    "css-color-keywords@npm:1.0.0" = {
+      name = "css-color-keywords";
+      reference = "npm:1.0.0";
+      linkType = "HARD";
+      outputName = "css-color-keywords-1.0.0-fc176df58b";
+      outputHash = "f82ad50222db625376d7764278e5fda43c58be64568d739c05e1406b4c74dfa376bb0bbee273cc39e579f65222175ae5d5aa3f9b34cfdcd67aea2d4655ee512f";
+      flatName = "css-color-keywords";
+      languageName = "node";
+      scope = null;
+      descriptorRange = "npm:^1.0.0";
+      checksum = "9/f82ad50222db625376d7764278e5fda43c58be64568d739c05e1406b4c74dfa376bb0bbee273cc39e579f65222175ae5d5aa3f9b34cfdcd67aea2d4655ee512f";
+    };
+    "css-to-react-native@npm:3.0.0" = {
+      name = "css-to-react-native";
+      reference = "npm:3.0.0";
+      linkType = "HARD";
+      outputName = "css-to-react-native-3.0.0-ab07d67d74";
+      outputHash = "424d600adb0915b4a9958d60488d58dc0a1d1445dfaf638fd117918c0be5c549393d15655a62353cbb4e7d9e4ceaebd1acf2c0cc14dfe67eebf9f5de44f2eb03";
+      flatName = "css-to-react-native";
+      languageName = "node";
+      scope = null;
+      descriptorRange = "npm:^3.0.0";
+      checksum = "9/424d600adb0915b4a9958d60488d58dc0a1d1445dfaf638fd117918c0be5c549393d15655a62353cbb4e7d9e4ceaebd1acf2c0cc14dfe67eebf9f5de44f2eb03";
+      dependencies = {
+        "camelize" = packages."camelize@npm:1.0.1";
+        "css-color-keywords" = packages."css-color-keywords@npm:1.0.0";
+        "postcss-value-parser" = packages."postcss-value-parser@npm:4.2.0";
       };
     };
     "debug@npm:4.3.4" = {
@@ -4382,6 +4666,18 @@ let
       descriptorRange = "npm:^5.2.0";
       checksum = "9/4db420d3f0291d3c42e3700aee2986ec1ca8384224236da9441e67555c8af181fe5f883b0b312021ed475f0c138282066b0f5cb2240ee4a0c2ec5142274162d1";
     };
+    "eventemitter3@npm:3.1.2" = {
+      name = "eventemitter3";
+      reference = "npm:3.1.2";
+      linkType = "HARD";
+      outputName = "eventemitter3-3.1.2-a68b03e1ea";
+      outputHash = "de0ec98f01dc30b64392cc9ba0c7a7d3a135fb72887955972adc82eba4e6de0587f20a1881ca9dcb9eeffb60a9210d68c2982e560f4f8a6ccb2600bb08a4488b";
+      flatName = "eventemitter3";
+      languageName = "node";
+      scope = null;
+      descriptorRange = "npm:^3.1.0";
+      checksum = "9/de0ec98f01dc30b64392cc9ba0c7a7d3a135fb72887955972adc82eba4e6de0587f20a1881ca9dcb9eeffb60a9210d68c2982e560f4f8a6ccb2600bb08a4488b";
+    };
     "events@npm:3.3.0" = {
       name = "events";
       reference = "npm:3.3.0";
@@ -4619,7 +4915,6 @@ let
       outputName = "fsevents-2.3.2-bc14f4e1ba";
       outputHashByPlatform = {
         "aarch64-darwin" = "sha512-uka9eemEm6sAGeKXHGrM/cfX65Rd2RWVeApfmeZrgeCG7giNVo2HDHPIev7RIMz07ObyqlBN+EdFaJ8Q9JsnQA==";
-        "x86_64-linux" = "sha512-uka9eemEm6sAGeKXHGrM/cfX65Rd2RWVeApfmeZrgeCG7giNVo2HDHPIev7RIMz07ObyqlBN+EdFaJ8Q9JsnQA==";
       };
       shouldBeUnplugged = true;
       installCondition = stdenv: (stdenv.isDarwin);
@@ -4883,6 +5178,18 @@ let
       descriptorRange = "npm:^4.2.4";
       checksum = "9/6b5f9b5aeaee0459b9c37bdbf9624f788703ce291d6bf2d7751f5003942e853f232ca613aec818d1ff7622379bc8b434c635bfda99db93e0b9b8da80ec3d844d";
     };
+    "graphql@npm:16.6.0" = {
+      name = "graphql";
+      reference = "npm:16.6.0";
+      linkType = "HARD";
+      outputName = "graphql-16.6.0-301c470966";
+      outputHash = "686582916b9ca247f3562f086c34a6363155475da909e1f891f9a76a3b5273ed6c7034cd5a82e768670ac5a74d539a6f1be282253a92b49be3a489fc82e83a5b";
+      flatName = "graphql";
+      languageName = "node";
+      scope = null;
+      descriptorRange = "npm:^16.6.0";
+      checksum = "9/686582916b9ca247f3562f086c34a6363155475da909e1f891f9a76a3b5273ed6c7034cd5a82e768670ac5a74d539a6f1be282253a92b49be3a489fc82e83a5b";
+    };
     "has-flag@npm:3.0.0" = {
       name = "has-flag";
       reference = "npm:3.0.0";
@@ -4932,6 +5239,21 @@ let
       checksum = "9/3e8c4d87ccd9c160d61a5db829b5fb647acac79e482476c857d5d1dc580517c6a77cf84337808f28361f6263008ce1ce5aff44407bd9241af93c623ef8d8d4f1";
       dependencies = {
         "function-bind" = packages."function-bind@npm:1.1.1";
+      };
+    };
+    "hoist-non-react-statics@npm:3.3.2" = {
+      name = "hoist-non-react-statics";
+      reference = "npm:3.3.2";
+      linkType = "HARD";
+      outputName = "hoist-non-react-statics-3.3.2-e7b709e6c1";
+      outputHash = "fb03b1e426696928dfbae467baf12bdf123fccb051d92fd677c4f290d43dea52ebe7a555c3afc6f3babc657961df2ab50a70bb13739be72904f893598b98b8d7";
+      flatName = "hoist-non-react-statics";
+      languageName = "node";
+      scope = null;
+      descriptorRange = "npm:^3.0.0";
+      checksum = "9/fb03b1e426696928dfbae467baf12bdf123fccb051d92fd677c4f290d43dea52ebe7a555c3afc6f3babc657961df2ab50a70bb13739be72904f893598b98b8d7";
+      dependencies = {
+        "react-is" = packages."react-is@npm:16.13.1";
       };
     };
     "homedir-polyfill@npm:1.0.3" = {
@@ -5467,6 +5789,18 @@ let
         "html-escaper" = packages."html-escaper@npm:2.0.2";
         "istanbul-lib-report" = packages."istanbul-lib-report@npm:3.0.0";
       };
+    };
+    "iterall@npm:1.3.0" = {
+      name = "iterall";
+      reference = "npm:1.3.0";
+      linkType = "HARD";
+      outputName = "iterall-1.3.0-a2cb04809f";
+      outputHash = "4e49cae82d50a04258b50080aa85b9e590704b420c1aa529a7eb492264b1550e1a06ece4faecae995719b72b511651692a9f38b2950fcdd23320e703c61cc345";
+      flatName = "iterall";
+      languageName = "node";
+      scope = null;
+      descriptorRange = "npm:^1.2.1";
+      checksum = "9/4e49cae82d50a04258b50080aa85b9e590704b420c1aa529a7eb492264b1550e1a06ece4faecae995719b72b511651692a9f38b2950fcdd23320e703c61cc345";
     };
     "jest-changed-files@npm:29.2.0" = {
       name = "jest-changed-files";
@@ -6852,6 +7186,7 @@ let
       outputName = "nan-2.17.0-bf36a21d6f";
       outputHashByPlatform = {
         "aarch64-darwin" = "sha512-vaHklwbCugGO1eXXYwW7TmwZUx06adQReESZw4KTdbNPoP0ioUIBnAjBWaWPrhxQEE/czsGxJh504Ce/+/dHyA==";
+        "x86_64-linux" = "sha512-vaHklwbCugGO1eXXYwW7TmwZUx06adQReESZw4KTdbNPoP0ioUIBnAjBWaWPrhxQEE/czsGxJh504Ce/+/dHyA==";
       };
       shouldBeUnplugged = true;
       flatName = "nan";
@@ -7280,10 +7615,7 @@ let
       reference = "npm:8.4.0";
       linkType = "HARD";
       outputName = "open-8.4.0-df63cfe537";
-      outputHashByPlatform = {
-        "aarch64-darwin" = "sha512-Wn1DDmyfrh7nCfoWSu4EVuUtxJibUAMNLqLJ56K/EvE7sRfG+IVOePGdb5C9GWhpbCiU+M6bBnTuDRWFJUtdUA==";
-      };
-      shouldBeUnplugged = true;
+      outputHash = "287db1bc10b3927b247d7c125d3ef998c410f57f434619a9d93f3e1384ff025ef12c18c1cfde1cb8f23f1326fb2bfe2634c789737bb65c18183015b5de81f594";
       flatName = "open";
       languageName = "node";
       scope = null;
@@ -7302,6 +7634,7 @@ let
       outputName = "open-8.4.0-9b4636d0d9";
       outputHashByPlatform = {
         "aarch64-darwin" = "sha512-fhLJ778B2/lZjzfKYzt1dFk4OzenM2MFEiGhy4a4fjVJM7OLL4YzBLWaS64NUtWcWa+5ULvlSOyA9KliBgPa3A==";
+        "x86_64-linux" = "sha512-fhLJ778B2/lZjzfKYzt1dFk4OzenM2MFEiGhy4a4fjVJM7OLL4YzBLWaS64NUtWcWa+5ULvlSOyA9KliBgPa3A==";
       };
       src = ./.yarn/patches/open-npm-8.4.0-df63cfe537;
       shouldBeUnplugged = true;
@@ -7499,7 +7832,7 @@ let
       flatName = "pg-connection-string";
       languageName = "node";
       scope = null;
-      descriptorRange = "npm:2.5.0";
+      descriptorRange = "npm:^2.5.0";
       checksum = "9/3a751060f9517ccc1484b42439cfd4ef758273a0954d41d71e15b5a671845ab4706b82de1a9181f2f858369ec362638f741dbea415c85d530845b634e10f1069";
     };
     "pg-int8@npm:1.0.1" = {
@@ -7673,6 +8006,18 @@ let
       dependencies = {
         "find-up" = packages."find-up@npm:4.1.0";
       };
+    };
+    "postcss-value-parser@npm:4.2.0" = {
+      name = "postcss-value-parser";
+      reference = "npm:4.2.0";
+      linkType = "HARD";
+      outputName = "postcss-value-parser-4.2.0-3cef602a6a";
+      outputHash = "edc490e9f11336a2efb136d8a52350b5c680ca9a91ee64285732e796177eb888f559a4eafc94cdbf7ce065a388e65b3cc21a32c92458a90efc445f30e8a679dc";
+      flatName = "postcss-value-parser";
+      languageName = "node";
+      scope = null;
+      descriptorRange = "npm:^4.0.2";
+      checksum = "9/edc490e9f11336a2efb136d8a52350b5c680ca9a91ee64285732e796177eb888f559a4eafc94cdbf7ce065a388e65b3cc21a32c92458a90efc445f30e8a679dc";
     };
     "postcss@npm:8.4.14" = {
       name = "postcss";
@@ -7935,6 +8280,18 @@ let
         "scheduler" = packages."scheduler@npm:0.23.0";
       };
     };
+    "react-is@npm:16.13.1" = {
+      name = "react-is";
+      reference = "npm:16.13.1";
+      linkType = "HARD";
+      outputName = "react-is-16.13.1-a9b9382b4f";
+      outputHash = "0c9adc5d984db733fb1dd298f3e94cdec66bc328d27fb11df65971d2cc9a299008bc64baab8fe8e79943df85b445a1008b2cc9e270825d0fd056e5a0d2df8de6";
+      flatName = "react-is";
+      languageName = "node";
+      scope = null;
+      descriptorRange = "npm:^16.7.0";
+      checksum = "9/0c9adc5d984db733fb1dd298f3e94cdec66bc328d27fb11df65971d2cc9a299008bc64baab8fe8e79943df85b445a1008b2cc9e270825d0fd056e5a0d2df8de6";
+    };
     "react-is@npm:18.2.0" = {
       name = "react-is";
       reference = "npm:18.2.0";
@@ -7944,7 +8301,7 @@ let
       flatName = "react-is";
       languageName = "node";
       scope = null;
-      descriptorRange = "npm:^18.0.0";
+      descriptorRange = "npm:^18.2.0";
       checksum = "9/f542f0effed3f89b4faa237bf56e746d437c9dba4ed1039a2ba6e6fcb463244300b8f3c17d8e610e76476a626c4d97ee4c2ed7a5b5d64e2b2e2d7b2144816ac8";
     };
     "react-scheduler@npm:0.1.0" = {
@@ -8185,6 +8542,21 @@ let
         "glob" = packages."glob@npm:7.2.3";
       };
     };
+    "rimraf@portal:./localPackageTests/test-portal::locator=root-workspace-0b6124%40workspace%3A." = {
+      name = "rimraf";
+      reference = "portal:./localPackageTests/test-portal::locator=root-workspace-0b6124%40workspace%3A.";
+      linkType = "SOFT";
+      outputName = "rimraf-1.0.0-2be39fd447";
+      src = ./localPackageTests/test-portal;
+      shouldBeUnplugged = true;
+      flatName = "rimraf";
+      languageName = "node";
+      scope = null;
+      descriptorRange = "portal:./localPackageTests/test-portal::locator=root-workspace-0b6124%40workspace%3A.";
+      dependencies = {
+        "isomorphic-fetch" = packages."isomorphic-fetch@npm:2.2.1";
+      };
+    };
     "root-workspace-0b6124@workspace:." = {
       name = "root-workspace-0b6124";
       reference = "workspace:.";
@@ -8331,6 +8703,18 @@ let
         "kind-of" = packages."kind-of@npm:6.0.3";
       };
     };
+    "shallowequal@npm:1.1.0" = {
+      name = "shallowequal";
+      reference = "npm:1.1.0";
+      linkType = "HARD";
+      outputName = "shallowequal-1.1.0-6688d419cb";
+      outputHash = "9ffaad8074fc1ff1b0ac6b58b8d3f000daa86d8ad1a3122d0dbf218ec777e3c5d2c753223684b46c1b886a66bc9fcd5cfea811e8bb39964220e05845182ae17a";
+      flatName = "shallowequal";
+      languageName = "node";
+      scope = null;
+      descriptorRange = "npm:^1.1.0";
+      checksum = "9/9ffaad8074fc1ff1b0ac6b58b8d3f000daa86d8ad1a3122d0dbf218ec777e3c5d2c753223684b46c1b886a66bc9fcd5cfea811e8bb39964220e05845182ae17a";
+    };
     "sharp@npm:0.31.1" = {
       name = "sharp";
       reference = "npm:0.31.1";
@@ -8338,7 +8722,7 @@ let
       outputName = "sharp-0.31.1-5baac7078b";
       outputHashByPlatform = {
         "aarch64-darwin" = "sha512-5DMQOkRDmf0tbAgvGSEikgINATLcRm8WKkaLyp1XOurtG0LIMJUlz8mB5E2cNpFuigLIrr7LrK+mtaUL/QSxkQ==";
-        "x86_64-linux" = "sha512-MElZzao++l7fksK0mnXjoeYmSFWtbLJzBg6H354ARQQWXrAyNem8Rcjity6FRu3VKJDdwy/8szLvrD8tekrPrA==";
+        "x86_64-linux" = "sha512-jirTC3XTIyBYEe1l9IgSr8S4zkkl6YvRNaqeQk1itXmbibRfk0KxziApSAmNByf+y0Z9vmMPmnJpr6OE3PODOg==";
       };
       shouldBeUnplugged = true;
       flatName = "sharp";
@@ -8748,6 +9132,77 @@ let
       descriptorRange = "npm:^3.1.1";
       checksum = "9/20cff3f15267a8b603c4dcec9c3cc5217bcf3f1a66481a4f9ecf262eacc1733a0457756288472328d24efef7705f7755e9511f9c383742389add93d4a9207ae5";
     };
+    "styled-components@npm:5.1.0" = {
+      name = "styled-components";
+      reference = "npm:5.1.0";
+      linkType = "HARD";
+      outputName = "styled-components-5.1.0-d2524d2a4e";
+      outputHash = "0c779ae6669265a52340175478cf79c90514d0b616620ecc3504eb01ae24a3e12d3cacbdb3128c619b5d7d8109e1f5c2e882dcf3a6bbd7ab3bdb63893d4185c3";
+      flatName = "styled-components";
+      languageName = "node";
+      scope = null;
+      descriptorRange = "npm:5.1.0";
+      checksum = "9/0c779ae6669265a52340175478cf79c90514d0b616620ecc3504eb01ae24a3e12d3cacbdb3128c619b5d7d8109e1f5c2e882dcf3a6bbd7ab3bdb63893d4185c3";
+      dependencies = {
+        "@babel/helper-module-imports" = packages."@babel/helper-module-imports@npm:7.18.6";
+        "@babel/traverse" = packages."@babel/traverse@npm:7.20.1";
+        "@emotion/is-prop-valid" = packages."@emotion/is-prop-valid@npm:0.8.8";
+        "@emotion/stylis" = packages."@emotion/stylis@npm:0.8.5";
+        "@emotion/unitless" = packages."@emotion/unitless@npm:0.7.5";
+        "babel-plugin-styled-components" = packages."babel-plugin-styled-components@npm:2.0.7";
+        "css-to-react-native" = packages."css-to-react-native@npm:3.0.0";
+        "hoist-non-react-statics" = packages."hoist-non-react-statics@npm:3.3.2";
+        "react-is" = packages."react-is@npm:18.2.0";
+        "shallowequal" = packages."shallowequal@npm:1.1.0";
+        "supports-color" = packages."supports-color@npm:5.5.0";
+      };
+      packagePeers = [
+        "@types/react-dom"
+        "@types/react-is"
+        "@types/react"
+        "react-dom"
+        "react-is"
+        "react"
+      ];
+    };
+    "styled-components@virtual:819008c351efcab39edaca3aff41825a322b497036fdaae27b5fba418f7e250764dbabc64de345136bce5b73e5ae95b76973a2b3591d90edde6160b93c624974#npm:5.1.0" = {
+      name = "styled-components";
+      reference = "virtual:819008c351efcab39edaca3aff41825a322b497036fdaae27b5fba418f7e250764dbabc64de345136bce5b73e5ae95b76973a2b3591d90edde6160b93c624974#npm:5.1.0";
+      canonicalPackage = packages."styled-components@npm:5.1.0";
+      dependencies = {
+        "@babel/helper-module-imports" = packages."@babel/helper-module-imports@npm:7.18.6";
+        "@babel/traverse" = packages."@babel/traverse@npm:7.20.1";
+        "@emotion/is-prop-valid" = packages."@emotion/is-prop-valid@npm:0.8.8";
+        "@emotion/stylis" = packages."@emotion/stylis@npm:0.8.5";
+        "@emotion/unitless" = packages."@emotion/unitless@npm:0.7.5";
+        "css-to-react-native" = packages."css-to-react-native@npm:3.0.0";
+        "hoist-non-react-statics" = packages."hoist-non-react-statics@npm:3.3.2";
+        "react" = packages."react@npm:18.2.0";
+        "react-dom" = packages."react-dom@virtual:819008c351efcab39edaca3aff41825a322b497036fdaae27b5fba418f7e250764dbabc64de345136bce5b73e5ae95b76973a2b3591d90edde6160b93c624974#npm:18.2.0";
+        "react-is" = packages."react-is@npm:18.2.0";
+        "shallowequal" = packages."shallowequal@npm:1.1.0";
+        "supports-color" = packages."supports-color@npm:5.5.0";
+        "babel-plugin-styled-components" = packages."babel-plugin-styled-components@virtual:a60ee67777e3a4dec4000b9ce9a2be872437b9757c065d396235f717dc6148ffdc59fbe6d8e5782eaf31ed07f4a94a33e7c1bcf5b52a99fc87904220f225aba0#npm:2.0.7";
+      };
+    };
+    "styled-components@virtual:873621ee06b4625ead2be11f2d77ba70a136cc274552602a099052f59522f7193183c2fe44bd5a376d2f62cece35edf18f6bbeac7390077ea336f092796c7037#npm:5.1.0" = {
+      name = "styled-components";
+      reference = "virtual:873621ee06b4625ead2be11f2d77ba70a136cc274552602a099052f59522f7193183c2fe44bd5a376d2f62cece35edf18f6bbeac7390077ea336f092796c7037#npm:5.1.0";
+      canonicalPackage = packages."styled-components@npm:5.1.0";
+      dependencies = {
+        "@babel/helper-module-imports" = packages."@babel/helper-module-imports@npm:7.18.6";
+        "@babel/traverse" = packages."@babel/traverse@npm:7.20.1";
+        "@emotion/is-prop-valid" = packages."@emotion/is-prop-valid@npm:0.8.8";
+        "@emotion/stylis" = packages."@emotion/stylis@npm:0.8.5";
+        "@emotion/unitless" = packages."@emotion/unitless@npm:0.7.5";
+        "css-to-react-native" = packages."css-to-react-native@npm:3.0.0";
+        "hoist-non-react-statics" = packages."hoist-non-react-statics@npm:3.3.2";
+        "react-is" = packages."react-is@npm:18.2.0";
+        "shallowequal" = packages."shallowequal@npm:1.1.0";
+        "supports-color" = packages."supports-color@npm:5.5.0";
+        "babel-plugin-styled-components" = packages."babel-plugin-styled-components@virtual:8068c5cec940e8f589389e662e1222f56535f0d3bf414b6eda6b8dc84f0a160ebb853fa4364d75c871ea48c6ef583c72328cb2796ac9e605c1c7affd2dfceca6#npm:2.0.7";
+      };
+    };
     "styled-jsx@npm:5.0.7" = {
       name = "styled-jsx";
       reference = "npm:5.0.7";
@@ -8776,6 +9231,44 @@ let
         "react" = packages."react@npm:18.2.0";
       };
     };
+    "subscriptions-transport-ws@npm:0.11.0" = {
+      name = "subscriptions-transport-ws";
+      reference = "npm:0.11.0";
+      linkType = "HARD";
+      outputName = "subscriptions-transport-ws-0.11.0-6fa3639659";
+      outputHash = "ec572c4d32e1015faaa1e23a91e53c717163241b8c527b53d96fb92bec1582f272445a85c353fc9f4a94532f424de913555d6a4a491bf40d8a067c72b34b43ea";
+      flatName = "subscriptions-transport-ws";
+      languageName = "node";
+      scope = null;
+      descriptorRange = "npm:^0.11.0";
+      checksum = "9/ec572c4d32e1015faaa1e23a91e53c717163241b8c527b53d96fb92bec1582f272445a85c353fc9f4a94532f424de913555d6a4a491bf40d8a067c72b34b43ea";
+      dependencies = {
+        "backo2" = packages."backo2@npm:1.0.2";
+        "eventemitter3" = packages."eventemitter3@npm:3.1.2";
+        "iterall" = packages."iterall@npm:1.3.0";
+        "symbol-observable" = packages."symbol-observable@npm:1.2.0";
+        "ws" = packages."ws@npm:7.5.9";
+      };
+      packagePeers = [
+        "@types/graphql"
+        "@types/ws"
+        "graphql"
+      ];
+    };
+    "subscriptions-transport-ws@virtual:873621ee06b4625ead2be11f2d77ba70a136cc274552602a099052f59522f7193183c2fe44bd5a376d2f62cece35edf18f6bbeac7390077ea336f092796c7037#npm:0.11.0" = {
+      name = "subscriptions-transport-ws";
+      reference = "virtual:873621ee06b4625ead2be11f2d77ba70a136cc274552602a099052f59522f7193183c2fe44bd5a376d2f62cece35edf18f6bbeac7390077ea336f092796c7037#npm:0.11.0";
+      canonicalPackage = packages."subscriptions-transport-ws@npm:0.11.0";
+      dependencies = {
+        "@types/ws" = packages."@types/ws@npm:8.5.3";
+        "backo2" = packages."backo2@npm:1.0.2";
+        "eventemitter3" = packages."eventemitter3@npm:3.1.2";
+        "graphql" = packages."graphql@npm:16.6.0";
+        "iterall" = packages."iterall@npm:1.3.0";
+        "symbol-observable" = packages."symbol-observable@npm:1.2.0";
+        "ws" = packages."ws@virtual:3ff9e4ab0cfd8bf71be1ff9fa01ee8dff4fd64aa7a89a260b88b2c4b573aa7417bfcc63429ab5fb20e7bf5d9edf87c431c05ed577c53fe60f6f6c82d1abb4624#npm:7.5.9";
+      };
+    };
     "supports-color@npm:5.5.0" = {
       name = "supports-color";
       reference = "npm:5.5.0";
@@ -8785,7 +9278,7 @@ let
       flatName = "supports-color";
       languageName = "node";
       scope = null;
-      descriptorRange = "npm:^5.3.0";
+      descriptorRange = "npm:^5.5.0";
       checksum = "9/2eca8c4c8fccd2bd0027af240f85e99b1c9cb221186288dd478ce0fc61bdc07394e47f1bba2c91fe3ae432764772e3639e9c48bef19817267f151ae4a9b9ebef";
       dependencies = {
         "has-flag" = packages."has-flag@npm:3.0.0";
@@ -8832,6 +9325,18 @@ let
       scope = null;
       descriptorRange = "npm:^1.0.0";
       checksum = "9/14609489b044de2eaffe0e7549173bb39d6997510ac4b7279d07bf2aafe309205abe172a8c8d248062a24e32ab61a2ae85efc5b4cdf7f932c7cdbe81ca1f39ec";
+    };
+    "symbol-observable@npm:1.2.0" = {
+      name = "symbol-observable";
+      reference = "npm:1.2.0";
+      linkType = "HARD";
+      outputName = "symbol-observable-1.2.0-9e812a0a39";
+      outputHash = "5f5acf0dbbe0f131337187aa19c652583bb866fb7f49ee807f2fbbf475f26ffe5c5d4a085cc0a43167c5c1f35287efee6b76a68638aadfc0b0adcd36308733a3";
+      flatName = "symbol-observable";
+      languageName = "node";
+      scope = null;
+      descriptorRange = "npm:^1.0.4";
+      checksum = "9/5f5acf0dbbe0f131337187aa19c652583bb866fb7f49ee807f2fbbf475f26ffe5c5d4a085cc0a43167c5c1f35287efee6b76a68638aadfc0b0adcd36308733a3";
     };
     "tapable@npm:2.2.1" = {
       name = "tapable";
@@ -9044,19 +9549,26 @@ let
       scope = null;
       descriptorRange = "workspace:packages/testa";
       bin = {
+        "testa-peer-test" = "./bin/testa-peer-test";
         "testa-test" = "./bin/testa-test";
       };
       dependencies = {
+        "@types/ws" = packages."@types/ws@npm:8.5.3";
         "chai" = packages."chai@npm:4.3.6";
         "color" = packages."color@npm:4.2.3";
         "enhanced-resolve" = packages."enhanced-resolve@npm:5.10.0";
         "esbuild" = packages."esbuild@npm:0.15.10";
+        "graphql" = packages."graphql@npm:16.6.0";
         "knex" = packages."knex@virtual:873621ee06b4625ead2be11f2d77ba70a136cc274552602a099052f59522f7193183c2fe44bd5a376d2f62cece35edf18f6bbeac7390077ea336f092796c7037#npm:2.3.0";
         "react-old" = packages."react@npm:18.2.0";
+        "rimraf" = packages."rimraf@portal:./localPackageTests/test-portal::locator=root-workspace-0b6124%40workspace%3A.";
+        "styled-components" = packages."styled-components@virtual:873621ee06b4625ead2be11f2d77ba70a136cc274552602a099052f59522f7193183c2fe44bd5a376d2f62cece35edf18f6bbeac7390077ea336f092796c7037#npm:5.1.0";
+        "subscriptions-transport-ws" = packages."subscriptions-transport-ws@virtual:873621ee06b4625ead2be11f2d77ba70a136cc274552602a099052f59522f7193183c2fe44bd5a376d2f62cece35edf18f6bbeac7390077ea336f092796c7037#npm:0.11.0";
         "teste" = packages."teste@virtual:873621ee06b4625ead2be11f2d77ba70a136cc274552602a099052f59522f7193183c2fe44bd5a376d2f62cece35edf18f6bbeac7390077ea336f092796c7037#workspace:packages/teste";
-        "testf" = packages."testf@workspace:packages/testf";
+        "ts-configs" = packages."ts-configs@workspace:packages/ts-configs";
       };
       devDependencies = {
+        "@types/node" = packages."@types/node@npm:18.11.9";
         "typescript" = packages."typescript@patch:typescript@npm%3A4.8.4#optional!builtin<compat/typescript>::version=4.8.4&hash=701156";
       };
     };
@@ -9085,6 +9597,7 @@ let
         "react-scheduler" = packages."react-scheduler@npm:0.1.0";
         "resolve-dir" = packages."resolve-dir@npm:1.0.1";
         "sharp" = packages."sharp@npm:0.31.1";
+        "styled-components" = packages."styled-components@virtual:819008c351efcab39edaca3aff41825a322b497036fdaae27b5fba418f7e250764dbabc64de345136bce5b73e5ae95b76973a2b3591d90edde6160b93c624974#npm:5.1.0";
         "test-portal" = packages."test-portal@portal:../../localPackageTests/test-portal::locator=testb%40workspace%3Apackages%2Ftestb";
         "test-tgz-redux-saga-core" = packages."test-tgz-redux-saga-core@file:../../localPackageTests/test-tgz-redux-saga-core.tgz::locator=testb%40workspace%3Apackages%2Ftestb";
         "testa" = packages."testa@workspace:packages/testa";
@@ -9098,6 +9611,10 @@ let
         "webpack" = packages."webpack@virtual:819008c351efcab39edaca3aff41825a322b497036fdaae27b5fba418f7e250764dbabc64de345136bce5b73e5ae95b76973a2b3591d90edde6160b93c624974#npm:5.74.0";
         "webpack-cli" = packages."webpack-cli@virtual:819008c351efcab39edaca3aff41825a322b497036fdaae27b5fba418f7e250764dbabc64de345136bce5b73e5ae95b76973a2b3591d90edde6160b93c624974#npm:4.10.0";
       };
+      packagePeers = [
+        "@types/react"
+        "react"
+      ];
     };
     "testc-alt-name-test@portal:../testc::locator=testb%40workspace%3Apackages%2Ftestb" = {
       name = "testc-alt-name-test";
@@ -9142,6 +9659,9 @@ let
       name = "teste";
       reference = "virtual:873621ee06b4625ead2be11f2d77ba70a136cc274552602a099052f59522f7193183c2fe44bd5a376d2f62cece35edf18f6bbeac7390077ea336f092796c7037#workspace:packages/teste";
       canonicalPackage = packages."teste@workspace:packages/teste";
+      dependencies = {
+        "react-is" = packages."react-is@npm:18.2.0";
+      };
       devDependencies = {
         "jest" = packages."jest@virtual:a585144e15e84575e46cc830f85385f6313ef412d3c2dc37baf2e8c9c2f433d57318f84d807636b675be55f255212ca55600409cfa54712421408c4c7e51a64a#npm:29.2.2";
       };
@@ -9157,6 +9677,9 @@ let
       languageName = "unknown";
       scope = null;
       descriptorRange = "workspace:packages/teste";
+      dependencies = {
+        "react-is" = packages."react-is@npm:18.2.0";
+      };
       devDependencies = {
         "jest" = packages."jest@virtual:a585144e15e84575e46cc830f85385f6313ef412d3c2dc37baf2e8c9c2f433d57318f84d807636b675be55f255212ca55600409cfa54712421408c4c7e51a64a#npm:29.2.2";
       };
@@ -9239,6 +9762,18 @@ let
       scope = null;
       descriptorRange = "npm:~0.0.3";
       checksum = "9/c670667f2df1c0983b48ee7e81d6013ab304f73573e9e4292233821b2219504307bedffc303c32df30813a9138114b8b084c81dea94fb68f08aca7770af98578";
+    };
+    "ts-configs@workspace:packages/ts-configs" = {
+      name = "ts-configs";
+      reference = "workspace:packages/ts-configs";
+      linkType = "SOFT";
+      outputName = "ts-configs-0.0.0-dcc12fe6ea";
+      src = ./packages/ts-configs;
+      shouldBeUnplugged = true;
+      flatName = "ts-configs";
+      languageName = "unknown";
+      scope = null;
+      descriptorRange = "workspace:packages/ts-configs";
     };
     "tslib@npm:2.4.0" = {
       name = "tslib";
@@ -9840,6 +10375,29 @@ let
         "imurmurhash" = packages."imurmurhash@npm:0.1.4";
         "signal-exit" = packages."signal-exit@npm:3.0.7";
       };
+    };
+    "ws@npm:7.5.9" = {
+      name = "ws";
+      reference = "npm:7.5.9";
+      linkType = "HARD";
+      outputName = "ws-7.5.9-26f12a5ed6";
+      outputHash = "5a4f52060e2a65194c324e5506021c998444ef5740365f7f04a59da38d2da5229221f5ab6e7ceee0d5999d03c2c1c73164a5ebdafa481043edeae4c5c42f988c";
+      flatName = "ws";
+      languageName = "node";
+      scope = null;
+      descriptorRange = "npm:^5.2.0 || ^6.0.0 || ^7.0.0";
+      checksum = "9/5a4f52060e2a65194c324e5506021c998444ef5740365f7f04a59da38d2da5229221f5ab6e7ceee0d5999d03c2c1c73164a5ebdafa481043edeae4c5c42f988c";
+      packagePeers = [
+        "@types/bufferutil"
+        "@types/utf-8-validate"
+        "bufferutil"
+        "utf-8-validate"
+      ];
+    };
+    "ws@virtual:3ff9e4ab0cfd8bf71be1ff9fa01ee8dff4fd64aa7a89a260b88b2c4b573aa7417bfcc63429ab5fb20e7bf5d9edf87c431c05ed577c53fe60f6f6c82d1abb4624#npm:7.5.9" = {
+      name = "ws";
+      reference = "virtual:3ff9e4ab0cfd8bf71be1ff9fa01ee8dff4fd64aa7a89a260b88b2c4b573aa7417bfcc63429ab5fb20e7bf5d9edf87c431c05ed577c53fe60f6f6c82d1abb4624#npm:7.5.9";
+      canonicalPackage = packages."ws@npm:7.5.9";
     };
     "xtend@npm:4.0.2" = {
       name = "xtend";

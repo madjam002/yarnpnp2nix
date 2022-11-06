@@ -46,6 +46,7 @@
                 build = ''
                   echo $PATH
                   tsc --version
+                  tsc
                 '';
               };
               "testb@workspace:packages/testb" = {

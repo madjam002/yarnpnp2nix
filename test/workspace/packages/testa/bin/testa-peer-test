@@ -1,0 +1,5 @@
+#!/usr/bin/env node
+
+const { expect } = require('chai')
+
+expect(() => require('teste')).to.throw(`teste tried to access react (a peer dependency) but it isn't provided by your application; this makes the require call ambiguous and unsound.`)
