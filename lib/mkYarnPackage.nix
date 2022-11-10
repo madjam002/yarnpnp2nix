@@ -423,7 +423,7 @@ let
           packageDrv = allPackageData."${pkgRef}".drv.package;
         in
         mapAttrsToList (binKey: binScript: { name = binKey; value = { inherit pkg; inherit binScript; }; }) ((resolvePkg pkg).bin or {})
-      ) (mapAttrsToList (__: dep: dep) packageManifest.dependencies));
+      ) (mapAttrsToList (__: dep: dep) (packageManifest.dependencies or {})));
 
       devDependencyBins = listToAttrs (concatMap (pkg:
         let
