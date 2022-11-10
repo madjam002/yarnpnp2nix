@@ -150,6 +150,53 @@ let
         inherit locatorString;
       };
 
+      createShellRuntimeEnvironment =
+        {
+          name,
+          createLockFileScript,
+          dependencyBins,
+        }:
+        pkgs.stdenv.mkDerivation {
+          inherit name;
+          phases = [ "generateRuntimePhase" ];
+
+          buildInputs = with pkgs; [
+            nodejsPackage
+            defaultPkgs.yarnBerry
+          ];
+
+          generateRuntimePhase = ''
+            tmpDir=$TMPDIR
+            ${setupYarnBinScript}
+
+            packageLocation="/"
+            packageDrvLocation="/"
+            ${createLockFileScript}
+
+            mkdir -p $out/bin
+            cp $tmpDir/yarn.lock $out
+            cp $tmpDir/packageRegistryData.json $out
+
+            ${concatStringsSep "\n" (mapAttrsToList (binKey: { pkg, binScript }: ''
+            cat << EOF > $out/bin/${binKey}
+            #!${pkgs.bashInteractive}/bin/bash
+
+            pnpDir="\$(mktemp -d)"
+            (cd $out && YARN_PLUGINS=${nixPlugin} ${defaultPkgs.yarnBerry}/bin/yarn nix generate-pnp-file \$pnpDir $out/packageRegistryData.json "${locatorString}")
+            binPackageLocation="\$(${nodejsPackage}/bin/node -r \$pnpDir/.pnp.cjs -e 'console.log(require("pnpapi").getPackageInformation({ name: process.argv[1], reference: process.argv[2] })?.packageLocation)' "${pkg.name}" "${pkg.reference}")"
+
+            export PATH="${nodejsPackage}/bin:\''$PATH"
+
+            nodeOptions="--require \$pnpDir/.pnp.cjs"
+            export NODE_OPTIONS="\''$NODE_OPTIONS \''$nodeOptions"
+
+            ${nodejsPackage}/bin/node \$binPackageLocation./${binScript} "\$@"
+            EOF
+            chmod +x $out/bin/${binKey}
+            '') dependencyBins)}
+          '';
+        };
+
       packageRegistryRuntimeOnly = buildPackageRegistry {
         inherit pkgs;
         topLevel = packageManifest;
@@ -378,45 +425,24 @@ let
         mapAttrsToList (binKey: binScript: { name = binKey; value = { inherit pkg; inherit binScript; }; }) ((resolvePkg pkg).bin or {})
       ) (mapAttrsToList (__: dep: dep) packageManifest.dependencies));
 
-      shellRuntimeEnvironment = pkgs.stdenv.mkDerivation {
+      devDependencyBins = listToAttrs (concatMap (pkg:
+        let
+          pkgRef = "${pkg.name}@${pkg.reference}";
+          packageDrv = allPackageData."${pkgRef}".drv.package;
+        in
+        mapAttrsToList (binKey: binScript: { name = binKey; value = { inherit pkg; inherit binScript; }; }) ((resolvePkg pkg).bin or {})
+      ) (mapAttrsToList (__: dep: dep) (packageManifest.devDependencies or {})));
+
+      shellRuntimeEnvironment = createShellRuntimeEnvironment {
         name = outputName + "-shell-environment";
-        phases = [ "generateRuntimePhase" ];
+        createLockFileScript = createLockFileScriptForRuntime;
+        dependencyBins = dependencyBins;
+      };
 
-        buildInputs = with pkgs; [
-          nodejsPackage
-          defaultPkgs.yarnBerry
-        ];
-
-        generateRuntimePhase = ''
-          tmpDir=$TMPDIR
-          ${setupYarnBinScript}
-
-          packageLocation="/"
-          packageDrvLocation="/"
-          ${createLockFileScriptForRuntime}
-
-          mkdir -p $out/bin
-          cp $tmpDir/yarn.lock $out
-          cp $tmpDir/packageRegistryData.json $out
-
-          ${concatStringsSep "\n" (mapAttrsToList (binKey: { pkg, binScript }: ''
-          cat << EOF > $out/bin/${binKey}
-          #!${pkgs.bashInteractive}/bin/bash
-
-          pnpDir="\$(mktemp -d)"
-          (cd $out && YARN_PLUGINS=${nixPlugin} ${defaultPkgs.yarnBerry}/bin/yarn nix generate-pnp-file \$pnpDir $out/packageRegistryData.json "${locatorString}")
-          binPackageLocation="\$(${nodejsPackage}/bin/node -r \$pnpDir/.pnp.cjs -e 'console.log(require("pnpapi").getPackageInformation({ name: process.argv[1], reference: process.argv[2] })?.packageLocation)' "${pkg.name}" "${pkg.reference}")"
-
-          export PATH="${nodejsPackage}/bin:\''$PATH"
-
-          nodeOptions="--require \$pnpDir/.pnp.cjs"
-          export NODE_OPTIONS="\''$NODE_OPTIONS \''$nodeOptions"
-
-          ${nodejsPackage}/bin/node \$binPackageLocation./${binScript} "\$@"
-          EOF
-          chmod +x $out/bin/${binKey}
-          '') dependencyBins)}
-        '';
+      shellRuntimeDevEnvironment = createShellRuntimeEnvironment {
+        name = outputName + "-shell-dev-environment";
+        createLockFileScript = createLockFileScript;
+        dependencyBins = devDependencyBins // dependencyBins;
       };
     in
     finalDerivation // {
@@ -424,6 +450,7 @@ let
       manifest = packageManifest;
       transitiveRuntimePackages = filter (pkg: pkg != null) (mapAttrsToList (key: pkg: if pkg != null && !isString pkg.drvPath then pkg.drvPath.binDrvPath else null) packageRegistryRuntimeOnly);
       inherit shellRuntimeEnvironment;
+      inherit shellRuntimeDevEnvironment;
       # for debugging with nix eval
       inherit packageRegistry;
     };
