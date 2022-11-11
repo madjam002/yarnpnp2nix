@@ -549,9 +549,12 @@ export default {
             pkgDependencies = new Map()
             pkgDevDependencies = new Map()
 
-            Array.from(manifest.dependencies).map(([key, value]) => pkgDependencies.set(key, pkg.dependencies.get(key)))
-            if (manifest.devDependencies)
+            if (manifest.devDependencies) {
               Array.from(manifest.devDependencies).map(([key, value]) => pkgDevDependencies.set(key, pkg.dependencies.get(key)))
+              Array.from(pkg.dependencies).map(([key, value]) =>
+                !pkgDevDependencies.has(key) ? pkgDependencies.set(key, value) : null
+              )
+            }
           }
         }
 

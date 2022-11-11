@@ -9559,13 +9559,13 @@ let
         "enhanced-resolve" = packages."enhanced-resolve@npm:5.10.0";
         "esbuild" = packages."esbuild@npm:0.15.10";
         "graphql" = packages."graphql@npm:16.6.0";
-        "knex" = packages."knex@virtual:873621ee06b4625ead2be11f2d77ba70a136cc274552602a099052f59522f7193183c2fe44bd5a376d2f62cece35edf18f6bbeac7390077ea336f092796c7037#npm:2.3.0";
         "react-old" = packages."react@npm:18.2.0";
         "rimraf" = packages."rimraf@portal:./localPackageTests/test-portal::locator=root-workspace-0b6124%40workspace%3A.";
+        "ts-configs" = packages."ts-configs@workspace:packages/ts-configs";
+        "knex" = packages."knex@virtual:873621ee06b4625ead2be11f2d77ba70a136cc274552602a099052f59522f7193183c2fe44bd5a376d2f62cece35edf18f6bbeac7390077ea336f092796c7037#npm:2.3.0";
         "styled-components" = packages."styled-components@virtual:873621ee06b4625ead2be11f2d77ba70a136cc274552602a099052f59522f7193183c2fe44bd5a376d2f62cece35edf18f6bbeac7390077ea336f092796c7037#npm:5.1.0";
         "subscriptions-transport-ws" = packages."subscriptions-transport-ws@virtual:873621ee06b4625ead2be11f2d77ba70a136cc274552602a099052f59522f7193183c2fe44bd5a376d2f62cece35edf18f6bbeac7390077ea336f092796c7037#npm:0.11.0";
         "teste" = packages."teste@virtual:873621ee06b4625ead2be11f2d77ba70a136cc274552602a099052f59522f7193183c2fe44bd5a376d2f62cece35edf18f6bbeac7390077ea336f092796c7037#workspace:packages/teste";
-        "ts-configs" = packages."ts-configs@workspace:packages/ts-configs";
       };
       devDependencies = {
         "@types/node" = packages."@types/node@npm:18.11.9";
@@ -9589,20 +9589,20 @@ let
       dependencies = {
         "canvas" = packages."canvas@npm:2.10.1";
         "fsevents" = packages."fsevents@patch:fsevents@npm%3A2.3.2#optional!builtin<compat/fsevents>::version=2.3.2&hash=18f3a7";
-        "knex" = packages."knex@virtual:819008c351efcab39edaca3aff41825a322b497036fdaae27b5fba418f7e250764dbabc64de345136bce5b73e5ae95b76973a2b3591d90edde6160b93c624974#npm:2.3.0";
         "open" = packages."open@patch:open@npm%3A8.4.0#.yarn/patches/open-npm-8.4.0-df63cfe537::version=8.4.0&hash=e6ee73&locator=root-workspace-0b6124%40workspace%3A.";
-        "pg" = packages."pg@virtual:819008c351efcab39edaca3aff41825a322b497036fdaae27b5fba418f7e250764dbabc64de345136bce5b73e5ae95b76973a2b3591d90edde6160b93c624974#npm:8.8.0";
-        "react" = packages."react@npm:18.2.0";
-        "react-dom" = packages."react-dom@virtual:819008c351efcab39edaca3aff41825a322b497036fdaae27b5fba418f7e250764dbabc64de345136bce5b73e5ae95b76973a2b3591d90edde6160b93c624974#npm:18.2.0";
         "react-scheduler" = packages."react-scheduler@npm:0.1.0";
+        "react" = packages."react@npm:18.2.0";
         "resolve-dir" = packages."resolve-dir@npm:1.0.1";
         "sharp" = packages."sharp@npm:0.31.1";
-        "styled-components" = packages."styled-components@virtual:819008c351efcab39edaca3aff41825a322b497036fdaae27b5fba418f7e250764dbabc64de345136bce5b73e5ae95b76973a2b3591d90edde6160b93c624974#npm:5.1.0";
         "test-portal" = packages."test-portal@portal:../../localPackageTests/test-portal::locator=testb%40workspace%3Apackages%2Ftestb";
         "test-tgz-redux-saga-core" = packages."test-tgz-redux-saga-core@file:../../localPackageTests/test-tgz-redux-saga-core.tgz::locator=testb%40workspace%3Apackages%2Ftestb";
         "testa" = packages."testa@workspace:packages/testa";
         "testc-alt-name-test" = packages."testc-alt-name-test@portal:../testc::locator=testb%40workspace%3Apackages%2Ftestb";
         "testd" = packages."testd@workspace:packages/testd";
+        "knex" = packages."knex@virtual:819008c351efcab39edaca3aff41825a322b497036fdaae27b5fba418f7e250764dbabc64de345136bce5b73e5ae95b76973a2b3591d90edde6160b93c624974#npm:2.3.0";
+        "pg" = packages."pg@virtual:819008c351efcab39edaca3aff41825a322b497036fdaae27b5fba418f7e250764dbabc64de345136bce5b73e5ae95b76973a2b3591d90edde6160b93c624974#npm:8.8.0";
+        "react-dom" = packages."react-dom@virtual:819008c351efcab39edaca3aff41825a322b497036fdaae27b5fba418f7e250764dbabc64de345136bce5b73e5ae95b76973a2b3591d90edde6160b93c624974#npm:18.2.0";
+        "styled-components" = packages."styled-components@virtual:819008c351efcab39edaca3aff41825a322b497036fdaae27b5fba418f7e250764dbabc64de345136bce5b73e5ae95b76973a2b3591d90edde6160b93c624974#npm:5.1.0";
       };
       devDependencies = {
         "esbuild" = packages."esbuild@npm:0.15.10";
