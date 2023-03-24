@@ -190,7 +190,7 @@ let
             nodeOptions="--require \$pnpDir/.pnp.cjs"
             export NODE_OPTIONS="\''$NODE_OPTIONS \''$nodeOptions"
 
-            ${nodejsPackage}/bin/node \$binPackageLocation./${binScript} "\$@"
+            exec ${nodejsPackage}/bin/node \$binPackageLocation./${binScript} "\$@"
             EOF
             chmod +x $out/bin/${binKey}
             '') dependencyBins)}
@@ -392,8 +392,8 @@ let
             nodeOptions="--require $out/.pnp.cjs"
             export NODE_OPTIONS="\''$NODE_OPTIONS \''$nodeOptions"
 
-            ${if shouldBeUnplugged then ''${fetchDerivation}/node_modules/${name}/${binScript} "\$@"''
-            else ''node ${fetchDerivation}/node_modules/${name}/${binScript} "\$@"''}
+            ${if shouldBeUnplugged then ''exec ${fetchDerivation}/node_modules/${name}/${binScript} "\$@"''
+            else ''exec node ${fetchDerivation}/node_modules/${name}/${binScript} "\$@"''}
             EOF
             chmod +x $out/bin/${binKey}
             '') bin)}
