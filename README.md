@@ -25,10 +25,43 @@ Requires a Yarn version > 3 project using PnP linking (the default). Zero instal
 
 - See [test/flake.nix](./test/flake.nix) for an example on how to create Nix derivations for Yarn packages using `mkYarnPackagesFromManifest`.
 
+## Quick examples
+
+Setting a build command for a package:
+
+```nix
+mkYarnPackagesFromManifest {
+    yarnManifest = import ./workspace/yarn-manifest.nix;
+    packageOverrides = {
+        "my-package@workspace:packages/my-package".build = ''
+            // Any custom build logic here
+        '';
+    };
+};
+```
+
+Fixing a hash mismatch:
+
+```nix
+mkYarnPackagesFromManifest {
+    yarnManifest = import ./workspace/yarn-manifest.nix;
+    packageOverrides = {
+        "my-package@workspace:packages/my-package".outputHash = "sha512-4pNZfI6GbsEsBySIs+gK98AGZhWf9QZ3SLytsWIzLnCeJYt2ma6qVK5Gk4TSHsUOmSjqUX8seBCKBBL7f1pvTQ==";
+    };
+};
+```
+
 ## Other notes
 
 Known caveats:
 - Initial build can be a bit slow as each dependency is a separate derivation and needs to be fetched from the package registry. Still, a sample project with a couple of thousand dependencies (!!) only takes a couple of minutes to build all of the dependency derivations. Make sure you have enough parallelism in your `nix build` (either using the `-j` argument or setting your Nix config appropriately)
+- Patched packages with localy stored patches need to have their revision strings updated to use relative paths instead of the default `~/` prefix
+
+    For example, to fix a revision of a package stored in `packages/my-package` (relative to the workspace root), update the revision as such:
+```diff
+- "next": "patch:next@npm%3A13.2.1#~/.yarn/patches/next-npm-13.2.1-585715321e.patch",
++ "next": "patch:next@npm%3A13.2.1#../../.yarn/patches/next-npm-13.2.1-585715321e.patch",
+```
 
 Possible future improvements:
 - When adding a Yarn package, copy it straight into the nix store rather than a Yarn cache in the users home directory
