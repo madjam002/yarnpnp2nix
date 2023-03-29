@@ -728,8 +728,19 @@ export default {
             }
             manifestNix.push(`      };`)
           }
-          if (pkg.src)
-            manifestNix.push(`      src = ${pkg.src};`)
+          if (pkg.src) {
+            const storeForbiddenCharacterRegexp = /[^a-zA-Z0-9/+.=_-]/g;
+            // Is the src a valid path that can be copied to the store? If not, escape the path by interpolating it as a string, and use `builtins.path` to replace the illegal characters by `__`.
+            const nixPathExpr =
+              storeForbiddenCharacterRegexp.test(pkg.src)
+              ? `builtins.path { name = "${
+                path.basename(pkg.src).replace(storeForbiddenCharacterRegexp, "__")
+              }"; path = ./\${"${
+                pkg.src.replace(/"/g, '\\"')
+              }"}; }`
+              : pkg.src
+            manifestNix.push(`      src = ${nixPathExpr};`)
+          }
           if (pkg.shouldBeUnplugged)
             manifestNix.push(`      shouldBeUnplugged = ${pkg.shouldBeUnplugged};`)
           if (pkg.installCondition)
