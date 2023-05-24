@@ -253,6 +253,7 @@ let
             mkdir -p $packageLocation
             ${createLockFileScript}
             yarn nix generate-pnp-file $out $tmpDir/packageRegistryData.json "${locatorString}"
+            cp --no-preserve=mode "${./.pnp.loader.mjs}" $out/.pnp.loader.mjs
 
             ${if build != "" then ''
             cp -rT ${src} $packageLocation
@@ -262,7 +263,7 @@ let
             yarn nix make-path-wrappers $tmpDir/wrappedbins $out $tmpDir/packageRegistryData.json "${locatorString}"
 
             cd $packageLocation
-            nodeOptions="--require $out/.pnp.cjs"
+            nodeOptions="--require $out/.pnp.cjs --loader $out/.pnp.loader.mjs"
             oldNodeOptions="$NODE_OPTIONS"
             oldPath="$PATH"
             export NODE_OPTIONS="$NODE_OPTIONS $nodeOptions"
@@ -312,6 +313,7 @@ let
             ${if build == "" then createLockFileScript else ""}
 
             yarn nix generate-pnp-file $out $tmpDir/packageRegistryData.json "${locatorString}"
+            cp --no-preserve=mode "${./.pnp.loader.mjs}" $out/.pnp.loader.mjs
 
             # create dummy home directory in case any build scripts need it
             export HOME=$tmpDir/home
@@ -377,6 +379,7 @@ let
 
           mkdir -p $out
           yarn nix generate-pnp-file $out $tmpDir/packageRegistryData.json "${locatorString}"
+          cp --no-preserve=mode "${./.pnp.loader.mjs}" $out/.pnp.loader.mjs
         '';
 
         wrapBinPhase =
@@ -389,7 +392,7 @@ let
 
             export PATH="${nodejsPackage}/bin:\''$PATH"
 
-            nodeOptions="--require $out/.pnp.cjs"
+            nodeOptions="--require $out/.pnp.cjs --loader $out/.pnp.loader.mjs"
             export NODE_OPTIONS="\''$NODE_OPTIONS \''$nodeOptions"
 
             ${if shouldBeUnplugged then ''exec ${fetchDerivation}/node_modules/${name}/${binScript} "\$@"''
