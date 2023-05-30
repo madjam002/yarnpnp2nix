@@ -1,5 +1,21 @@
 {
   "nodes": {
+    "flake-compat": {
+      "flake": false,
+      "locked": {
+        "lastModified": 1673956053,
+        "narHash": "sha256-4gtG9iQuiKITOjNQQeQIpoIB6b16fm+504Ch3sNKLd8=",
+        "owner": "edolstra",
+        "repo": "flake-compat",
+        "rev": "35bb57c0c8d8b62bbfd284272c928ceb64ddbde9",
+        "type": "github"
+      },
+      "original": {
+        "owner": "edolstra",
+        "repo": "flake-compat",
+        "type": "github"
+      }
+    },
     "flake-utils": {
       "locked": {
         "lastModified": 1644229661,
@@ -73,6 +89,7 @@
     },
     "yarnpnp2nix": {
       "inputs": {
+        "flake-compat": "flake-compat",
         "nixpkgs": [
           "nixpkgs"
         ],
@@ -80,12 +97,12 @@
       },
       "locked": {
         "lastModified": 0,
-        "narHash": "sha256-Usf2dbsXaB6xkICX4P5nt8CBdR4JjxRpJz9stkTvm7A=",
-        "path": "/nix/store/pdwibaa25n6123w13w7lw29nf5kw59lg-source",
+        "narHash": "sha256-millAlN1yr3622zO+UXFhCxC6ygSQKJn1eCZNTccD3w=",
+        "path": "/nix/store/al43ad5bjjzm1y0k2zv2jxyg6qdknjal-source",
         "type": "path"
       },
       "original": {
-        "path": "/nix/store/pdwibaa25n6123w13w7lw29nf5kw59lg-source",
+        "path": "/nix/store/al43ad5bjjzm1y0k2zv2jxyg6qdknjal-source",
         "type": "path"
       }
     }
