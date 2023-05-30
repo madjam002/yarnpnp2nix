@@ -28,6 +28,11 @@
         packages = {
           yarn-plugin = pkgs.yarn-plugin-yarnpnp2nix;
           yarnBerry = pkgs.yarnBerry;
+          yarnpnp2nix-test = pkgs.writeShellApplication {
+            name = "yarnpnp2nix-test";
+            runtimeInputs = [ pkgs.jq ];
+            text = builtins.readFile ./runTests.sh;
+          };
         };
         lib = pkgs.yarnpnp2nixLib;
         devShell = import ./shell.nix {
