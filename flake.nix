@@ -11,37 +11,31 @@
   };
 
   outputs = inputs@{ self, nixpkgs, utils, ... }:
-    (utils.lib.eachDefaultSystem (system:
+    let
+      overlay = final: prev: {
+        yarnBerry = final.callPackage ./yarn.nix {};
+        yarn-plugin-yarnpnp2nix = final.callPackage ./yarnPlugin.nix {};
+        yarnpnp2nixLib = import ./lib/mkYarnPackage.nix { defaultPkgs = final; lib = final.lib; };
+      };
+    in (utils.lib.eachDefaultSystem (system:
       let
         pkgs = import nixpkgs {
           inherit system;
-          overlays = [
-            (final: prev: {
-              yarnBerry = prev.callPackage ./yarn.nix {};
-            })
-          ];
+          overlays = [overlay];
         };
       in
       rec {
         packages = {
-          yarn-plugin = pkgs.callPackage ./yarnPlugin.nix {};
+          yarn-plugin = pkgs.yarn-plugin-yarnpnp2nix;
           yarnBerry = pkgs.yarnBerry;
         };
-        lib = {
-          mkYarnPackagesFromManifest = (import ./lib/mkYarnPackage.nix { defaultPkgs = pkgs; lib = pkgs.lib; }).mkYarnPackagesFromManifest;
-        };
+        lib = pkgs.yarnpnp2nixLib;
         devShell = import ./shell.nix {
           inherit pkgs;
         };
       }
     ))
     //
-    {
-      overlays.default = (final: prev: {
-        yarnBerry = final.callPackage ./yarn.nix {};
-        yarn-plugin-yarnpnp2nix = final.callPackage ./yarnPlugin.nix {};
-        yarnpnp2nixLib = import ./lib/mkYarnPackage.nix { defaultPkgs = final; lib = final.lib; };
-      });
-    }
+    { overlays.default = overlay; }
   ;
 }
