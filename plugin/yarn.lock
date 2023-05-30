@@ -2399,11 +2399,11 @@ __metadata:
 
 "typescript@patch:typescript@npm%3A4.9.1-beta#optional!builtin<compat/typescript>":
   version: 4.9.1-beta
-  resolution: "typescript@patch:typescript@npm%3A4.9.1-beta#optional!builtin<compat/typescript>::version=4.9.1-beta&hash=701156"
+  resolution: "typescript@patch:typescript@npm%3A4.9.1-beta#optional!builtin<compat/typescript>::version=4.9.1-beta&hash=af41af"
   bin:
     tsc: bin/tsc
     tsserver: bin/tsserver
-  checksum: 54c08d930b680d1c892d5ad9e9fb4ba9d8b2c5e94d6cbbafd22112ba7248c113b0f05a48b07a1b5f6a2f6be904d9ec8ce691fe6cb2fdd864401b6437f0ff36c9
+  checksum: 3029328991439bbce6e08d25f9e54ee10b41184fdaf5d4b30309eec22fa55111ac1303b673971494462711cfea46d03064531cfd5c93c4cc88f10b55c5a8bb39
   languageName: node
   linkType: hard
 

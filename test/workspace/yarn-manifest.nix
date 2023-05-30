@@ -4908,14 +4908,12 @@ let
         "node-gyp" = packages."node-gyp@npm:9.3.0";
       };
     };
-    "fsevents@patch:fsevents@npm%3A2.3.2#optional!builtin<compat/fsevents>::version=2.3.2&hash=18f3a7" = {
+    "fsevents@patch:fsevents@npm%3A2.3.2#optional!builtin<compat/fsevents>::version=2.3.2&hash=df0bf1" = {
       name = "fsevents";
-      reference = "patch:fsevents@npm%3A2.3.2#optional!builtin<compat/fsevents>::version=2.3.2&hash=18f3a7";
+      reference = "patch:fsevents@npm%3A2.3.2#optional!builtin<compat/fsevents>::version=2.3.2&hash=df0bf1";
       linkType = "HARD";
-      outputName = "fsevents-2.3.2-bc14f4e1ba";
-      outputHashByPlatform = {
-        "aarch64-darwin" = "sha512-uka9eemEm6sAGeKXHGrM/cfX65Rd2RWVeApfmeZrgeCG7giNVo2HDHPIev7RIMz07ObyqlBN+EdFaJ8Q9JsnQA==";
-      };
+      outputName = "fsevents-2.3.2-19706e7e35";
+      outputHash = "";
       shouldBeUnplugged = true;
       installCondition = stdenv: (stdenv.isDarwin);
       flatName = "fsevents";
@@ -6104,7 +6102,7 @@ let
         "@types/node" = packages."@types/node@npm:18.11.5";
         "anymatch" = packages."anymatch@npm:3.1.2";
         "fb-watchman" = packages."fb-watchman@npm:2.0.2";
-        "fsevents" = packages."fsevents@patch:fsevents@npm%3A2.3.2#optional!builtin<compat/fsevents>::version=2.3.2&hash=18f3a7";
+        "fsevents" = packages."fsevents@patch:fsevents@npm%3A2.3.2#optional!builtin<compat/fsevents>::version=2.3.2&hash=df0bf1";
         "graceful-fs" = packages."graceful-fs@npm:4.2.10";
         "jest-regex-util" = packages."jest-regex-util@npm:29.2.0";
         "jest-util" = packages."jest-util@npm:29.2.1";
@@ -6257,7 +6255,7 @@ let
         "jest-util" = packages."jest-util@npm:29.2.1";
         "jest-validate" = packages."jest-validate@npm:29.2.2";
         "resolve.exports" = packages."resolve.exports@npm:1.1.0";
-        "resolve" = packages."resolve@patch:resolve@npm%3A1.22.1#optional!builtin<compat/resolve>::version=1.22.1&hash=07638b";
+        "resolve" = packages."resolve@patch:resolve@npm%3A1.22.1#optional!builtin<compat/resolve>::version=1.22.1&hash=c3c19d";
         "slash" = packages."slash@npm:3.0.0";
         "jest-pnp-resolver" = packages."jest-pnp-resolver@virtual:feab314bafcb8ef83010ab39931574f8d65fc287ad4af32f12e22176665c61f29d1d2a783e727e16f59b6fb6876d47cb96d590f021b8edb2bde3c1f5c0699f5b#npm:1.2.2";
       };
@@ -7627,13 +7625,12 @@ let
         "is-wsl" = packages."is-wsl@npm:2.2.0";
       };
     };
-    "open@patch:open@npm%3A8.4.0#.yarn/patches/open-npm-8.4.0-df63cfe537::version=8.4.0&hash=e6ee73&locator=root-workspace-0b6124%40workspace%3A." = {
+    "open@patch:open@npm%3A8.4.0#.yarn/patches/open-npm-8.4.0-df63cfe537::version=8.4.0&hash=68ae10&locator=root-workspace-0b6124%40workspace%3A." = {
       name = "open";
-      reference = "patch:open@npm%3A8.4.0#.yarn/patches/open-npm-8.4.0-df63cfe537::version=8.4.0&hash=e6ee73&locator=root-workspace-0b6124%40workspace%3A.";
+      reference = "patch:open@npm%3A8.4.0#.yarn/patches/open-npm-8.4.0-df63cfe537::version=8.4.0&hash=68ae10&locator=root-workspace-0b6124%40workspace%3A.";
       linkType = "HARD";
-      outputName = "open-8.4.0-9b4636d0d9";
+      outputName = "open-8.4.0-560cd90f93";
       outputHashByPlatform = {
-        "aarch64-darwin" = "sha512-fhLJ778B2/lZjzfKYzt1dFk4OzenM2MFEiGhy4a4fjVJM7OLL4YzBLWaS64NUtWcWa+5ULvlSOyA9KliBgPa3A==";
         "x86_64-linux" = "sha512-fhLJ778B2/lZjzfKYzt1dFk4OzenM2MFEiGhy4a4fjVJM7OLL4YzBLWaS64NUtWcWa+5ULvlSOyA9KliBgPa3A==";
       };
       src = ./.yarn/patches/open-npm-8.4.0-df63cfe537;
@@ -8360,7 +8357,7 @@ let
       descriptorRange = "npm:^0.7.0";
       checksum = "9/89bc342f51aa6871a26b23e4cd306e4e9a83021b45aebf83c611e58e1c4759a90ddb562e3cb99289566063fe6fc180fbbe523ee91cb86712464da2f3060490ff";
       dependencies = {
-        "resolve" = packages."resolve@patch:resolve@npm%3A1.22.1#optional!builtin<compat/resolve>::version=1.22.1&hash=07638b";
+        "resolve" = packages."resolve@patch:resolve@npm%3A1.22.1#optional!builtin<compat/resolve>::version=1.22.1&hash=c3c19d";
       };
     };
     "rechoir@npm:0.8.0" = {
@@ -8375,7 +8372,7 @@ let
       descriptorRange = "npm:^0.8.0";
       checksum = "9/474f0e7813c90ae5d26a6d107700e215f888fe103705d4d6c99cac0606300f50494bc243725b373c45ba29ad693acf7315c3b432494796d2ead4b81fed996758";
       dependencies = {
-        "resolve" = packages."resolve@patch:resolve@npm%3A1.22.1#optional!builtin<compat/resolve>::version=1.22.1&hash=07638b";
+        "resolve" = packages."resolve@patch:resolve@npm%3A1.22.1#optional!builtin<compat/resolve>::version=1.22.1&hash=c3c19d";
       };
     };
     "redux@npm:4.2.0" = {
@@ -8492,11 +8489,11 @@ let
         "supports-preserve-symlinks-flag" = packages."supports-preserve-symlinks-flag@npm:1.0.0";
       };
     };
-    "resolve@patch:resolve@npm%3A1.22.1#optional!builtin<compat/resolve>::version=1.22.1&hash=07638b" = {
+    "resolve@patch:resolve@npm%3A1.22.1#optional!builtin<compat/resolve>::version=1.22.1&hash=c3c19d" = {
       name = "resolve";
-      reference = "patch:resolve@npm%3A1.22.1#optional!builtin<compat/resolve>::version=1.22.1&hash=07638b";
+      reference = "patch:resolve@npm%3A1.22.1#optional!builtin<compat/resolve>::version=1.22.1&hash=c3c19d";
       linkType = "HARD";
-      outputName = "resolve-1.22.1-bc26c25fbb";
+      outputName = "resolve-1.22.1-61fc5136ce";
       outputHash = "a6f214b97d932445796f78dab7a898ec78966327e0d6cb571f90b6ac0f3b3347bf6bab0a071d899bfdc316b26ed845f6655310b38b8f6ee4da5272a0c5ecef85";
       flatName = "resolve";
       languageName = "node";
@@ -9514,11 +9511,11 @@ let
         "isomorphic-fetch" = packages."isomorphic-fetch@npm:2.2.1";
       };
     };
-    "test-tgz-redux-saga-core@file:../../localPackageTests/test-tgz-redux-saga-core.tgz::locator=testb%40workspace%3Apackages%2Ftestb" = {
+    "test-tgz-redux-saga-core@file:../../localPackageTests/test-tgz-redux-saga-core.tgz#../../localPackageTests/test-tgz-redux-saga-core.tgz::hash=b2ff7c&locator=testb%40workspace%3Apackages%2Ftestb" = {
       name = "test-tgz-redux-saga-core";
-      reference = "file:../../localPackageTests/test-tgz-redux-saga-core.tgz::locator=testb%40workspace%3Apackages%2Ftestb";
+      reference = "file:../../localPackageTests/test-tgz-redux-saga-core.tgz#../../localPackageTests/test-tgz-redux-saga-core.tgz::hash=b2ff7c&locator=testb%40workspace%3Apackages%2Ftestb";
       linkType = "HARD";
-      outputName = "test-tgz-redux-saga-core-1.1.3-5045f0861f";
+      outputName = "test-tgz-redux-saga-core-1.1.3-c2022b18c6";
       src = ./localPackageTests/test-tgz-redux-saga-core.tgz;
       shouldBeUnplugged = true;
       flatName = "test-tgz-redux-saga-core";
@@ -9569,7 +9566,7 @@ let
       };
       devDependencies = {
         "@types/node" = packages."@types/node@npm:18.11.9";
-        "typescript" = packages."typescript@patch:typescript@npm%3A4.8.4#optional!builtin<compat/typescript>::version=4.8.4&hash=701156";
+        "typescript" = packages."typescript@patch:typescript@npm%3A4.8.4#optional!builtin<compat/typescript>::version=4.8.4&hash=1a91c8";
       };
     };
     "testb@workspace:packages/testb" = {
@@ -9588,14 +9585,14 @@ let
       };
       dependencies = {
         "canvas" = packages."canvas@npm:2.10.1";
-        "fsevents" = packages."fsevents@patch:fsevents@npm%3A2.3.2#optional!builtin<compat/fsevents>::version=2.3.2&hash=18f3a7";
-        "open" = packages."open@patch:open@npm%3A8.4.0#.yarn/patches/open-npm-8.4.0-df63cfe537::version=8.4.0&hash=e6ee73&locator=root-workspace-0b6124%40workspace%3A.";
+        "fsevents" = packages."fsevents@patch:fsevents@npm%3A2.3.2#optional!builtin<compat/fsevents>::version=2.3.2&hash=df0bf1";
+        "open" = packages."open@patch:open@npm%3A8.4.0#.yarn/patches/open-npm-8.4.0-df63cfe537::version=8.4.0&hash=68ae10&locator=root-workspace-0b6124%40workspace%3A.";
         "react-scheduler" = packages."react-scheduler@npm:0.1.0";
         "react" = packages."react@npm:18.2.0";
         "resolve-dir" = packages."resolve-dir@npm:1.0.1";
         "sharp" = packages."sharp@npm:0.31.1";
         "test-portal" = packages."test-portal@portal:../../localPackageTests/test-portal::locator=testb%40workspace%3Apackages%2Ftestb";
-        "test-tgz-redux-saga-core" = packages."test-tgz-redux-saga-core@file:../../localPackageTests/test-tgz-redux-saga-core.tgz::locator=testb%40workspace%3Apackages%2Ftestb";
+        "test-tgz-redux-saga-core" = packages."test-tgz-redux-saga-core@file:../../localPackageTests/test-tgz-redux-saga-core.tgz#../../localPackageTests/test-tgz-redux-saga-core.tgz::hash=b2ff7c&locator=testb%40workspace%3Apackages%2Ftestb";
         "testa" = packages."testa@workspace:packages/testa";
         "testc-alt-name-test" = packages."testc-alt-name-test@portal:../testc::locator=testb%40workspace%3Apackages%2Ftestb";
         "testd" = packages."testd@workspace:packages/testd";
@@ -9884,17 +9881,17 @@ let
         "tsserver" = "bin/tsserver";
       };
     };
-    "typescript@patch:typescript@npm%3A4.8.4#optional!builtin<compat/typescript>::version=4.8.4&hash=701156" = {
+    "typescript@patch:typescript@npm%3A4.8.4#optional!builtin<compat/typescript>::version=4.8.4&hash=1a91c8" = {
       name = "typescript";
-      reference = "patch:typescript@npm%3A4.8.4#optional!builtin<compat/typescript>::version=4.8.4&hash=701156";
+      reference = "patch:typescript@npm%3A4.8.4#optional!builtin<compat/typescript>::version=4.8.4&hash=1a91c8";
       linkType = "HARD";
-      outputName = "typescript-4.8.4-6568064686";
-      outputHash = "72574875bac1c13aec22010780d4841a10a88342d73744dbbad538bb0ed601f2024187f197239f2dcbf2442f83ecc4de04a80941d49730c403969fbba035ed81";
+      outputName = "typescript-4.8.4-14bc8df10f";
+      outputHash = "f6e45be090c6971bf57d07481cb7bd896303ffaee35b5a52a3418908d3cd252b20f5d25b5b1ebaf5c52754f9802421542b4aa70093744cb6d6b306936b5053bb";
       flatName = "typescript";
       languageName = "node";
       scope = null;
       descriptorRange = "patch:typescript@npm%3A^4.8.4#optional!builtin<compat/typescript>";
-      checksum = "9/72574875bac1c13aec22010780d4841a10a88342d73744dbbad538bb0ed601f2024187f197239f2dcbf2442f83ecc4de04a80941d49730c403969fbba035ed81";
+      checksum = "9/f6e45be090c6971bf57d07481cb7bd896303ffaee35b5a52a3418908d3cd252b20f5d25b5b1ebaf5c52754f9802421542b4aa70093744cb6d6b306936b5053bb";
       bin = {
         "tsc" = "bin/tsc";
         "tsserver" = "bin/tsserver";

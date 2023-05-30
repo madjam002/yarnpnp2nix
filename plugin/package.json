@@ -12,5 +12,6 @@
   },
   "scripts": {
     "build": "builder build plugin && mv bundles/@yarnpkg/plugin-yarnpnp2nix.js dist/"
-  }
+  },
+  "packageManager": "yarn@4.0.0-rc.44"
 }
