@@ -6,3 +6,4 @@ test/**/.pnp.loader.mjs
 **/.yarn/unplugged
 **/.yarn/install-state.gz
 tsconfig.tsbuildinfo
+test/workspace/.yarn/cache
