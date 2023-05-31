@@ -337,6 +337,7 @@ let
             # remove .pnp.cjs here as it will break Nix (see bug below), it's okay because we recreate it later
             # in finalDerivation
             rm $out/.pnp.cjs
+            rm $out/.pnp.loader.mjs || true
 
             # set executable bit with chmod for all bin scripts
             ${concatStringsSep "\n" (mapAttrsToList (binKey: binScript: ''
