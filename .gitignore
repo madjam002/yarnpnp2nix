@@ -2,7 +2,8 @@
 node_modules
 result
 .pnp.cjs
-test/**/.pnp.loader.mjs
+.pnp.loader.mjs
+!lib/.pnp.loader.mjs
 **/.yarn/unplugged
 **/.yarn/install-state.gz
 tsconfig.tsbuildinfo
