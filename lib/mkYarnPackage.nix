@@ -106,6 +106,7 @@ let
       buildInputs ? [],
       preInstallScript ? "",
       postInstallScript ? "",
+      binSetup ? "",
       __noChroot ? null,
     }:
     let
@@ -387,8 +388,13 @@ let
           if bin != null then ''
             mkdir -p $out/bin
 
+            binSetup=$(cat <<'EOYP'
+            ${binSetup}
+            EOYP
+            )
+
             ${concatStringsSep "\n" (mapAttrsToList (binKey: binScript: ''
-            cat << EOF > $out/bin/${binKey}
+            cat << EOYP > $out/bin/${binKey}
             #!${pkgs.bashInteractive}/bin/bash
 
             export PATH="${nodejsPackage}/bin:\''$PATH"
@@ -396,9 +402,11 @@ let
             nodeOptions="--require $out/.pnp.cjs --loader $out/.pnp.loader.mjs"
             export NODE_OPTIONS="\''$NODE_OPTIONS \''$nodeOptions"
 
+            $binSetup
+
             ${if shouldBeUnplugged then ''exec ${fetchDerivation}/node_modules/${name}/${binScript} "\$@"''
             else ''exec node ${fetchDerivation}/node_modules/${name}/${binScript} "\$@"''}
-            EOF
+            EOYP
             chmod +x $out/bin/${binKey}
             '') bin)}
           '' else " ";
@@ -494,6 +502,7 @@ let
       buildInputs = if hasAttr "buildInputs" packageManifest then packageManifest.buildInputs else [];
       preInstallScript = if hasAttr "preInstallScript" packageManifest then packageManifest.preInstallScript else "";
       postInstallScript = if hasAttr "postInstallScript" packageManifest then packageManifest.postInstallScript else "";
+      binSetup = if hasAttr "binSetup" packageManifest then packageManifest.binSetup else "";
       __noChroot = if hasAttr "__noChroot" packageManifest then packageManifest.__noChroot else null;
     });
 
