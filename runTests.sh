@@ -8,23 +8,23 @@ pushd test
 
 nix eval --json .#packages.aarch64-darwin.testa.transitiveRuntimePackages
 
-nix build -L .#packages.$system.testb
+nix build -L ".#packages.$system.testb"
 ./result/bin/testb
 
-nix build -L .#packages.$system.testa
+nix build -L ".#packages.$system.testa"
 ./result/bin/testa-peer-test
 
-nix build -L .#packages.$system.testb.package
+nix build -L ".#packages.$system.testb.package"
 testbPackage=$(realpath ./result)/node_modules/testb
 
-nix build -L .#packages.$system.testb.shellRuntimeEnvironment
+nix build -L ".#packages.$system.testb.shellRuntimeEnvironment"
 runShellEnvironmentTest=$(realpath ./result)
 
-pushd $testbPackage
-$runShellEnvironmentTest/bin/testa-test
+pushd "$testbPackage"
+"$runShellEnvironmentTest/bin/testa-test"
 popd
 
-nix develop .#packages.$system.testb -c bash <<EOF
+nix develop ".#packages.$system.testb" -c bash <<EOF
 cd $testbPackage
 testa-test
 EOF
