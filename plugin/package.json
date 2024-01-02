@@ -8,9 +8,15 @@
     "@yarnpkg/core": "^4.0.0-rc.26",
     "@yarnpkg/pnp": "^4.0.0-rc.26",
     "execa": "^6.1.0",
+    "micromatch": "^4.0.5",
+    "tar-stream": "^3.1.6",
     "typescript": "4.9.1-beta"
   },
   "scripts": {
     "build": "builder build plugin && mv bundles/@yarnpkg/plugin-yarnpnp2nix.js dist/"
+  },
+  "devDependencies": {
+    "@types/micromatch": "^4",
+    "@types/tar-stream": "^3"
   }
 }

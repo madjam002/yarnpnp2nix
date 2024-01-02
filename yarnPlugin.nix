@@ -1,4 +1,4 @@
-{ stdenv, lib, yarnBerry, nodejs, jq }:
+{ stdenv, lib, nodejs, jq }:
 
 stdenv.mkDerivation {
   name = "yarn-plugin-yarnpnp2nix";

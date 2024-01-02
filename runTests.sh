@@ -8,7 +8,7 @@ pushd test
 
 nix eval --json .#packages.aarch64-darwin.testa.transitiveRuntimePackages
 
-nix build -L .#packages.$system.testb
+nix build -L .#packages.$system.testb --option sandbox relaxed
 ./result/bin/testb
 
 nix build -L .#packages.$system.testa
