@@ -13,7 +13,6 @@
           inherit system;
           overlays = [
             (final: prev: {
-              yarnBerry = prev.callPackage ./yarn.nix {};
             })
           ];
         };

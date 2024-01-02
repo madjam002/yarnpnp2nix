@@ -12,7 +12,9 @@ Yet another way of packaging Node applications with Nix. Unlike alternatives, th
 
 ## Usage
 
-Requires a Yarn version > 3 project using PnP linking (the default). Zero installs are not required, so it's recommended to just use the global cache when developing your project rather than storing dependencies in your repo.
+Requires a Yarn version > 4 project using PnP linking (the default). Zero installs are not required, so it's recommended to just use the global cache when developing your project rather than storing dependencies in your repo.
+
+yarnpnp2nix is currently tested with Yarn version 4.0.1.
 
 - Install Yarn plugin in your project:
   ```

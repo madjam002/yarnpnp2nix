@@ -5,8 +5,9 @@ with lib;
 let
   nixPlugin = "${defaultPkgs.callPackage ../yarnPlugin.nix {}}/plugin.js";
 
-  setupYarnBinScript = ''
+  setupYarnBinScript = { yarnManifestSettings }: ''
     export YARN_PLUGINS=${nixPlugin}
+    export YARN_COMPRESSION_LEVEL="${toString (yarnManifestSettings.compressionLevel or 0)}"
   '';
 
   resolvePkg = pkg: if hasAttr "canonicalPackage" pkg then (
@@ -22,17 +23,19 @@ let
       packageOverrides ? {},
     }:
     let
-      mergedManifest = applyPackageOverrides { inherit yarnManifest; inherit packageOverrides; };
-      allPackageData = buildPackageDataFromYarnManifest { inherit pkgs; yarnManifest = mergedManifest; };
+      yarnManifestSettings = yarnManifest.settings;
+      mergedManifest = applyPackageOverrides { yarnManifest = yarnManifest.packages; inherit packageOverrides; };
+      allPackageData = buildPackageDataFromYarnManifest { inherit pkgs; yarnManifest = mergedManifest; inherit yarnManifestSettings; };
     in
     mapAttrs (key: value:
       mkYarnPackageFromManifest_internal {
         package = key;
         inherit pkgs;
         yarnManifest = mergedManifest;
+        inherit yarnManifestSettings;
         inherit allPackageData;
       }
-    ) yarnManifest;
+    ) yarnManifest.packages;
 
   rewritePackageRef = pkg: allPackages:
     let
@@ -100,6 +103,7 @@ let
       outputName ? name,
       src ? null,
       packageManifest,
+      yarnManifestSettings,
       allPackageData,
       nodejsPackage,
       build ? "",
@@ -163,12 +167,12 @@ let
 
           buildInputs = with pkgs; [
             nodejsPackage
-            defaultPkgs.yarnBerry
+            defaultPkgs.yarn-berry
           ];
 
           generateRuntimePhase = ''
             tmpDir=$TMPDIR
-            ${setupYarnBinScript}
+            ${setupYarnBinScript { inherit yarnManifestSettings; }}
 
             packageLocation="/"
             packageDrvLocation="/"
@@ -183,7 +187,7 @@ let
             #!${pkgs.bashInteractive}/bin/bash
 
             pnpDir="\$(mktemp -d)"
-            (cd $out && YARN_PLUGINS=${nixPlugin} ${defaultPkgs.yarnBerry}/bin/yarn nix generate-pnp-file \$pnpDir $out/packageRegistryData.json "${locatorString}")
+            (cd $out && YARN_PLUGINS=${nixPlugin} ${defaultPkgs.yarn-berry}/bin/yarn nix generate-pnp-file \$pnpDir $out/packageRegistryData.json "${locatorString}")
             binPackageLocation="\$(${nodejsPackage}/bin/node -r \$pnpDir/.pnp.cjs -e 'console.log(require("pnpapi").getPackageInformation({ name: process.argv[1], reference: process.argv[2] })?.packageLocation)' "${pkg.name}" "${pkg.reference}")"
 
             export PATH="${nodejsPackage}/bin:\''$PATH"
@@ -224,7 +228,7 @@ let
         buildInputs = with pkgs; [
           cacert
           nodejsPackage
-          defaultPkgs.yarnBerry
+          defaultPkgs.yarn-berry
           unzip
         ]
         ++ (if stdenv.isDarwin then [
@@ -235,7 +239,7 @@ let
         fetchPhase =
           if willFetch then ''
             tmpDir=$PWD
-            ${setupYarnBinScript}
+            ${setupYarnBinScript { inherit yarnManifestSettings; }}
 
             packageLocation=$out/node_modules/${name}
             touch yarn.lock
@@ -248,7 +252,7 @@ let
         buildPhase =
           if !willFetch then ''
             tmpDir=$PWD
-            ${setupYarnBinScript}
+            ${setupYarnBinScript { inherit yarnManifestSettings; }}
 
             packageLocation="$out/node_modules/${name}"
             packageDrvLocation="$out"
@@ -296,7 +300,7 @@ let
             if [ -f "$tmpDir/packageRegistryData.json" ]; then
               export YARNNIX_PACKAGE_REGISTRY_DATA_PATH="$tmpDir/packageRegistryData.json"
             fi
-            yarn pack -o $tmpDir/package.tgz
+            yarn nix pack -o $tmpDir/package.tgz
             yarn nix convert-to-zip ${locatorJSON} $tmpDir/package.tgz $tmpDir/output.zip
 
             ${if build != "" then "rm -rf $out" else ""}
@@ -369,12 +373,12 @@ let
 
         buildInputs = with pkgs; [
           nodejsPackage
-          defaultPkgs.yarnBerry
+          defaultPkgs.yarn-berry
         ];
 
         generateRuntimePhase = ''
           tmpDir=$PWD
-          ${setupYarnBinScript}
+          ${setupYarnBinScript { inherit yarnManifestSettings; }}
 
           packageLocation=${fetchDerivation}/node_modules/${name}
           packageDrvLocation=${fetchDerivation}
@@ -414,7 +418,7 @@ let
 
         shellHook = ''
           tmpDir=$TMPDIR
-          ${setupYarnBinScript}
+          ${setupYarnBinScript { inherit yarnManifestSettings; }}
 
           packageLocation="/"
           packageDrvLocation="/"
@@ -473,6 +477,7 @@ let
       package,
       pkgs,
       yarnManifest,
+      yarnManifestSettings,
       allPackageData,
     }:
     let
@@ -482,6 +487,7 @@ let
       inherit packageManifest;
       inherit pkgs;
       inherit yarnManifest;
+      inherit yarnManifestSettings;
       inherit allPackageData;
     };
 
@@ -490,6 +496,7 @@ let
       packageManifest,
       pkgs,
       yarnManifest,
+      yarnManifestSettings,
       allPackageData,
     }:
     (makeOverridable mkYarnPackage_internal {
@@ -498,6 +505,7 @@ let
       inherit (packageManifest) name outputName;
       inherit packageManifest;
       inherit allPackageData;
+      inherit yarnManifestSettings;
       src = if hasAttr "src" packageManifest then packageManifest.src else null;
       build = if hasAttr "build" packageManifest then packageManifest.build else "";
       buildInputs = if hasAttr "buildInputs" packageManifest then packageManifest.buildInputs else [];
@@ -511,6 +519,7 @@ let
     {
       pkgs,
       yarnManifest,
+      yarnManifestSettings,
     }:
     let
       getPackageDataForPackage = pkg:
@@ -523,12 +532,14 @@ let
           drv = mkYarnPackageFromPackageManifest_internal {
             inherit pkgs;
             inherit yarnManifest;
+            inherit yarnManifestSettings;
             packageManifest = resolvedPkg;
             inherit allPackageData;
           };
           drvForVirtual = mkYarnPackageFromPackageManifest_internal {
             inherit pkgs;
             inherit yarnManifest;
+            inherit yarnManifestSettings;
             packageManifest = resolvedPkg // {
               dependencies = pkg.dependencies or {};
               devDependencies = pkg.devDependencies or {};

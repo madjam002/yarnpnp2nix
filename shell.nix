@@ -5,7 +5,7 @@ with pkgs;
 mkShell {
   buildInputs = [
     nodejs
-    yarn
+    yarn-berry
   ];
 
   shellHook = ''
