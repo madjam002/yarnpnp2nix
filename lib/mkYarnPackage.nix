@@ -222,6 +222,7 @@ let
         outputHash = if __noChroot != true && outputHash != null then outputHash else null;
 
         buildInputs = with pkgs; [
+          cacert
           nodejsPackage
           defaultPkgs.yarnBerry
           unzip

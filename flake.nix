@@ -2,8 +2,8 @@
   description = "yarnpnp2nix";
 
   inputs = {
-    nixpkgs.url = github:nixos/nixpkgs/nixos-22.05;
-    utils.url = github:numtide/flake-utils;
+    nixpkgs.url = "github:nixos/nixpkgs/nixos-23.11";
+    utils.url = "github:numtide/flake-utils";
   };
 
   outputs = inputs@{ self, nixpkgs, utils, ... }:
