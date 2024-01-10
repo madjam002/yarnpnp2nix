@@ -269,7 +269,7 @@ let
             yarn nix make-path-wrappers $tmpDir/wrappedbins $out $tmpDir/packageRegistryData.json "${locatorString}"
 
             cd $packageLocation
-            nodeOptions="--require $out/.pnp.cjs"
+            nodeOptions="--require $out/.pnp.cjs --loader $out/.pnp.loader.mjs"
             oldNodeOptions="$NODE_OPTIONS"
             oldPath="$PATH"
             export NODE_OPTIONS="$NODE_OPTIONS $nodeOptions"
@@ -404,7 +404,7 @@ let
 
             export PATH="${nodejsPackage}/bin:\''$PATH"
 
-            nodeOptions="--require $out/.pnp.cjs"
+            nodeOptions="--require $out/.pnp.cjs --loader $out/.pnp.loader.mjs"
             export NODE_OPTIONS="\''$NODE_OPTIONS \''$nodeOptions"
 
             $binSetup
