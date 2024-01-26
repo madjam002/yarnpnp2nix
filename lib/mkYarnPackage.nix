@@ -259,7 +259,7 @@ let
             mkdir -p $packageLocation
             ${createLockFileScript}
             yarn nix generate-pnp-file $out $tmpDir/packageRegistryData.json "${locatorString}"
-            cp --no-preserve=mode "${./.pnp.loader.mjs}" $out/.pnp.loader.mjs
+            cp --no-preserve=mode "${./pnp.loader.mjs}" $out/.pnp.loader.mjs
 
             ${if build != "" then ''
             cp -rT ${src} $packageLocation
@@ -319,7 +319,7 @@ let
             ${if build == "" then createLockFileScript else ""}
 
             yarn nix generate-pnp-file $out $tmpDir/packageRegistryData.json "${locatorString}"
-            cp --no-preserve=mode "${./.pnp.loader.mjs}" $out/.pnp.loader.mjs
+            cp --no-preserve=mode "${./pnp.loader.mjs}" $out/.pnp.loader.mjs
 
             # create dummy home directory in case any build scripts need it
             export HOME=$tmpDir/home
@@ -386,7 +386,7 @@ let
 
           mkdir -p $out
           yarn nix generate-pnp-file $out $tmpDir/packageRegistryData.json "${locatorString}"
-          cp --no-preserve=mode "${./.pnp.loader.mjs}" $out/.pnp.loader.mjs
+          cp --no-preserve=mode "${./pnp.loader.mjs}" $out/.pnp.loader.mjs
         '';
 
         wrapBinPhase =
