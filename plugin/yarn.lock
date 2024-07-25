@@ -254,6 +254,15 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@types/node@npm:^18.17.15":
+  version: 18.19.42
+  resolution: "@types/node@npm:18.19.42"
+  dependencies:
+    undici-types: "npm:~5.26.4"
+  checksum: 024e8a6fac679fb4ec41a53ffa986806f3ac49b6003c380e84afb088280b463112e056f2c4ad1db3e6e36a60be75a18c3af9903ddeeb483f470e9ea629bee6f2
+  languageName: node
+  linkType: hard
+
 "@types/node@npm:^18.7.6":
   version: 18.11.5
   resolution: "@types/node@npm:18.11.5"
@@ -409,6 +418,15 @@ __metadata:
   dependencies:
     tslib: "npm:^2.4.0"
   checksum: a3b2b25ecc452027e175ba0089ba7ed12b75f79713cd7bf1312a300eb4c565583d0b10fb391b622b609e9d0a57f6979e1908ec63c741ed27813138df4b90478c
+  languageName: node
+  linkType: hard
+
+"@yarnpkg/fslib@npm:^3.1.0":
+  version: 3.1.0
+  resolution: "@yarnpkg/fslib@npm:3.1.0"
+  dependencies:
+    tslib: "npm:^2.4.0"
+  checksum: 99537cff3269f0728b440bc801872346f8f698ada479b00df82967c0fea1fc61588e69f669174fdf8274107a1b34dfb656513db8789db12afd7e6778bd2b4e86
   languageName: node
   linkType: hard
 
@@ -825,6 +843,16 @@ __metadata:
     "@yarnpkg/core": ^4.0.0-rc.26
     "@yarnpkg/plugin-git": ^3.0.0-rc.26
   checksum: 535dc750f0c9ef95b82cabe448a684385c1ae7ad4642b652ca5506688138268211a4f93299282b3d84d278a217eef23c36a3bc86038e2d8db0099b4d9b21162f
+  languageName: node
+  linkType: hard
+
+"@yarnpkg/pnp@npm:4.0.6":
+  version: 4.0.6
+  resolution: "@yarnpkg/pnp@npm:4.0.6"
+  dependencies:
+    "@types/node": "npm:^18.17.15"
+    "@yarnpkg/fslib": "npm:^3.1.0"
+  checksum: 1bb9e91311a990a5592016937dba1cda20362c5497e073ca47e584709f5267e5b258ddfc967ba2db875498dbad176ab0bc57ddfd74e91794ac4efd78b6eb6b63
   languageName: node
   linkType: hard
 
@@ -2474,6 +2502,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"undici-types@npm:~5.26.4":
+  version: 5.26.5
+  resolution: "undici-types@npm:5.26.5"
+  checksum: 0097779d94bc0fd26f0418b3a05472410408877279141ded2bd449167be1aed7ea5b76f756562cb3586a07f251b90799bab22d9019ceba49c037c76445f7cddd
+  languageName: node
+  linkType: hard
+
 "util-deprecate@npm:^1.0.1":
   version: 1.0.2
   resolution: "util-deprecate@npm:1.0.2"
@@ -2551,7 +2586,7 @@ __metadata:
     "@yarnpkg/builder": "npm:^4.0.0-rc.26"
     "@yarnpkg/cli": "npm:^4.0.0-rc.26"
     "@yarnpkg/core": "npm:^4.0.0-rc.26"
-    "@yarnpkg/pnp": "npm:^4.0.0-rc.26"
+    "@yarnpkg/pnp": "npm:4.0.6"
     execa: "npm:^6.1.0"
     micromatch: "npm:^4.0.5"
     tar-stream: "npm:^3.1.6"
