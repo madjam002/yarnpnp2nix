@@ -272,7 +272,7 @@ class GeneratePnpFile extends BaseCommand {
       let packageLocation = (relativePackageLocation.startsWith('../') ? relativePackageLocation : ('./' + relativePackageLocation)) + '/'
 
       if (isVirtual) {
-        packageLocation = './' + VirtualFS.makeVirtualPath('./.yarn/__virtual__', structUtils.slugifyLocator(locator), relativePackageLocation) + '/'
+        packageLocation = './' + path.relative(this.outDirectory, VirtualFS.makeVirtualPath(path.join(this.outDirectory, './.yarn/__virtual__'), structUtils.slugifyLocator(locator), packageLocationAbs)) + '/'
       }
 
       const packageData = {
