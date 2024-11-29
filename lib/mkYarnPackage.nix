@@ -187,14 +187,14 @@ let
             #!${pkgs.bashInteractive}/bin/bash
 
             pnpDir="\$(mktemp -d)"
-            (cd $out && YARN_PLUGINS=${nixPlugin} ${defaultPkgs.yarn-berry}/bin/yarn nix generate-pnp-file \$pnpDir $out/packageRegistryData.json "${locatorString}")
+            (cd $out && YARN_PLUGINS=${nixPlugin} NODE_OPTIONS="" ${defaultPkgs.yarn-berry}/bin/yarn nix generate-pnp-file \$pnpDir $out/packageRegistryData.json "${locatorString}")
             cp --no-preserve=mode "${./.pnp.loader.mjs}" \$pnpDir/.pnp.loader.mjs
-            binPackageLocation="\$(${nodejsPackage}/bin/node -r \$pnpDir/.pnp.cjs -e 'console.log(require("pnpapi").getPackageInformation({ name: process.argv[1], reference: process.argv[2] })?.packageLocation)' "${pkg.name}" "${pkg.reference}")"
+            binPackageLocation="\$(NODE_OPTIONS="" ${nodejsPackage}/bin/node -r \$pnpDir/.pnp.cjs -e 'console.log(require("pnpapi").getPackageInformation({ name: process.argv[1], reference: process.argv[2] })?.packageLocation)' "${pkg.name}" "${pkg.reference}")"
 
             export PATH="${nodejsPackage}/bin:\''$PATH"
 
             nodeOptions="--require \$pnpDir/.pnp.cjs --loader \$pnpDir/.pnp.loader.mjs"
-            export NODE_OPTIONS="\''$NODE_OPTIONS \''$nodeOptions"
+            export NODE_OPTIONS="\''$nodeOptions \''$NODE_OPTIONS"
 
             exec ${nodejsPackage}/bin/node \$binPackageLocation./${binScript} "\$@"
             EOF
