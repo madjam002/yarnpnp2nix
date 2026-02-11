@@ -167,7 +167,7 @@ let
 
           buildInputs = with pkgs; [
             nodejsPackage
-            defaultPkgs.yarn-berry
+            yarn-berry
           ];
 
           generateRuntimePhase = ''
@@ -187,7 +187,7 @@ let
             #!${pkgs.bashInteractive}/bin/bash
 
             pnpDir="\$(mktemp -d)"
-            (cd $out && YARN_PLUGINS=${nixPlugin} NODE_OPTIONS="" ${defaultPkgs.yarn-berry}/bin/yarn nix generate-pnp-file \$pnpDir $out/packageRegistryData.json "${locatorString}")
+            (cd $out && YARN_PLUGINS=${nixPlugin} NODE_OPTIONS="" ${pkgs.yarn-berry}/bin/yarn nix generate-pnp-file \$pnpDir $out/packageRegistryData.json "${locatorString}")
             cp --no-preserve=mode "${./.pnp.loader.mjs}" \$pnpDir/.pnp.loader.mjs
             binPackageLocation="\$(NODE_OPTIONS="" ${nodejsPackage}/bin/node -r \$pnpDir/.pnp.cjs -e 'console.log(require("pnpapi").getPackageInformation({ name: process.argv[1], reference: process.argv[2] })?.packageLocation)' "${pkg.name}" "${pkg.reference}")"
 
@@ -229,7 +229,7 @@ let
         buildInputs = with pkgs; [
           cacert
           nodejsPackage
-          defaultPkgs.yarn-berry
+          yarn-berry
           unzip
         ]
         ++ (if stdenv.isDarwin then [
@@ -374,7 +374,7 @@ let
 
         buildInputs = with pkgs; [
           nodejsPackage
-          defaultPkgs.yarn-berry
+          yarn-berry
         ];
 
         generateRuntimePhase = ''

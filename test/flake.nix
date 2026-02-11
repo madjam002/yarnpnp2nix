@@ -2,7 +2,7 @@
   description = "A very basic flake";
 
   inputs = {
-    nixpkgs.url = "github:nixos/nixpkgs/nixos-23.11";
+    nixpkgs.url = "github:nixos/nixpkgs/nixos-25.11";
     utils.url = "github:gytis-ivaskevicius/flake-utils-plus";
     yarnpnp2nix.url = "../.";
     yarnpnp2nix.inputs.nixpkgs.follows = "nixpkgs";
@@ -13,12 +13,24 @@
       inherit self inputs;
 
       outputsBuilder = channels: rec {
+        amendedPkgs = import inputs.nixpkgs {
+          system = channels.nixpkgs.stdenv.system;
+          config = {
+            packageOverrides = pkgs: rec {
+              nodejs = pkgs.nodejs_24;
+              nodejs-slim = pkgs.nodejs-slim_24;
+            };
+          };
+        };
+
         packages =
           let
             mkYarnPackagesFromManifest = yarnpnp2nix.lib."${channels.nixpkgs.stdenv.system}".mkYarnPackagesFromManifest;
             yarnPackages = mkYarnPackagesFromManifest {
               yarnManifest = import ./workspace/yarn-manifest.nix;
               inherit packageOverrides;
+              # test overriding nodejs version
+              pkgs = amendedPkgs;
             };
             packageOverrides = {
               "esbuild@npm:0.15.10" = {
@@ -36,7 +48,7 @@
                   autoconf zlib gcc automake pkg-config libtool file
                   python3
                   pixman cairo pango libpng libjpeg giflib librsvg libwebp libuuid
-                ] ++ (if channels.nixpkgs.stdenv.isDarwin then [ darwin.apple_sdk.frameworks.CoreText ] else []));
+                ]);
               };
               "sharp@npm:0.31.1" = {
                 outputHashByPlatform."x86_64-linux" = "sha512-jirTC3XTIyBYEe1l9IgSr8S4zkkl6YvRNaqeQk1itXmbibRfk0KxziApSAmNByf+y0Z9vmMPmnJpr6OE3PODOg==";
@@ -78,8 +90,8 @@
             config.Cmd = "${packages.testb}/bin/testb";
           };
         };
-        devShell = import ./shell.nix {
-          pkgs = channels.nixpkgs;
+        devShell = import ../shell.nix {
+          pkgs = amendedPkgs;
         };
       };
     };
