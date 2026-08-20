@@ -59,6 +59,7 @@
                   echo $PATH
                   tsc --version
                   tsc
+                  node topLevelTest.js
                 '';
               };
               "testb@workspace:packages/testb" = {

@@ -381,15 +381,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/node@npm:^18.17.15":
-  version: 18.19.42
-  resolution: "@types/node@npm:18.19.42"
-  dependencies:
-    undici-types: "npm:~5.26.4"
-  checksum: 10/024e8a6fac679fb4ec41a53ffa986806f3ac49b6003c380e84afb088280b463112e056f2c4ad1db3e6e36a60be75a18c3af9903ddeeb483f470e9ea629bee6f2
-  languageName: node
-  linkType: hard
-
 "@types/node@npm:^18.19.124":
   version: 18.19.130
   resolution: "@types/node@npm:18.19.130"
@@ -645,21 +636,21 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@yarnpkg/fslib@npm:^3.1.0":
-  version: 3.1.0
-  resolution: "@yarnpkg/fslib@npm:3.1.0"
-  dependencies:
-    tslib: "npm:^2.4.0"
-  checksum: 10/99537cff3269f0728b440bc801872346f8f698ada479b00df82967c0fea1fc61588e69f669174fdf8274107a1b34dfb656513db8789db12afd7e6778bd2b4e86
-  languageName: node
-  linkType: hard
-
 "@yarnpkg/fslib@npm:^3.1.2, @yarnpkg/fslib@npm:^3.1.3, @yarnpkg/fslib@npm:^3.1.4":
   version: 3.1.4
   resolution: "@yarnpkg/fslib@npm:3.1.4"
   dependencies:
     tslib: "npm:^2.4.0"
   checksum: 10/9587a154768e61fbcf71ae745b1bf84e4ce0cbaa94163137ec88bd5005000a5b893dacbccbed7ac5f7643f957781c4f481d11ab3baf421ccafffbf43c275073d
+  languageName: node
+  linkType: hard
+
+"@yarnpkg/fslib@npm:^3.1.5":
+  version: 3.1.5
+  resolution: "@yarnpkg/fslib@npm:3.1.5"
+  dependencies:
+    tslib: "npm:^2.4.0"
+  checksum: 10/67b4850cdfbf0c11460302d997c0eacab46246cc8c7718a045beca346c494163e15768e2d20ab719ff6a98adbe7eaa9efcecdfd5cb0b8539f84a96449ac7ceaa
   languageName: node
   linkType: hard
 
@@ -1522,13 +1513,13 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@yarnpkg/pnp@npm:4.0.6":
-  version: 4.0.6
-  resolution: "@yarnpkg/pnp@npm:4.0.6"
+"@yarnpkg/pnp@npm:4.1.7":
+  version: 4.1.7
+  resolution: "@yarnpkg/pnp@npm:4.1.7"
   dependencies:
-    "@types/node": "npm:^18.17.15"
-    "@yarnpkg/fslib": "npm:^3.1.0"
-  checksum: 10/1bb9e91311a990a5592016937dba1cda20362c5497e073ca47e584709f5267e5b258ddfc967ba2db875498dbad176ab0bc57ddfd74e91794ac4efd78b6eb6b63
+    "@types/node": "npm:^18.19.124"
+    "@yarnpkg/fslib": "npm:^3.1.5"
+  checksum: 10/7e37f25086daf3226e79572fd871f503fb5e751a55f3a182fb73f111b5a99d70f991e32f561c9a62067312dea4f3f1aacc1ead4fd2869ffd2ffe018c795262cc
   languageName: node
   linkType: hard
 
@@ -3948,7 +3939,7 @@ __metadata:
     "@yarnpkg/builder": "npm:4.2.3"
     "@yarnpkg/cli": "npm:^4.0.0-rc.26"
     "@yarnpkg/core": "npm:^4.0.0-rc.26"
-    "@yarnpkg/pnp": "npm:4.0.6"
+    "@yarnpkg/pnp": "npm:4.1.7"
     execa: "npm:^6.1.0"
     micromatch: "npm:^4.0.5"
     tar-stream: "npm:^3.1.6"

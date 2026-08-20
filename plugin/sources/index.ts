@@ -10,9 +10,26 @@ const fs = require('fs')
 const path = require('path')
 const { PassThrough } = require('stream')
 const { spawnSync } = require('child_process')
-const { generateInlinedScript } = require('@yarnpkg/pnp')
+const { generateSplitScript, generateLoader, generatePrettyJson } = require('@yarnpkg/pnp')
 
 let _nixCurrentSystem: string
+
+// Copied from @yarnpkg/pnp's generatePnpScript.ts, which does not export it.
+// Only needed because we have to re-serialize the runtime state after putting
+// the top level package entry back (see GeneratePnpFile below).
+function generateStringLiteral(value: string) {
+  return `'${value.replace(/\\/g, `\\\\`).replace(/'/g, `\\'`).replace(/\n/g, `\\\n`)}'`
+}
+
+function generateInlinedSetup(data: any) {
+  return [
+    `const RAW_RUNTIME_STATE =\n`,
+    `${generateStringLiteral(generatePrettyJson(data))};\n\n`,
+    `function $$SETUP_STATE(hydrateRuntimeState, basePath) {\n`,
+    `  return hydrateRuntimeState(JSON.parse(RAW_RUNTIME_STATE), {basePath: basePath || __dirname});\n`,
+    `}\n`,
+  ].join(``)
+}
 
 function getByValue(map, searchValue) {
   for (let [key, value] of map.entries()) {
@@ -235,12 +252,14 @@ class GeneratePnpFile extends BaseCommand {
     const fallbackPool = new Map();
     const ignorePattern = miscUtils.buildIgnorePattern([`.yarn/sdks/**`, ...project.configuration.get(`pnpIgnorePatterns`)]);
     const shebang = project.configuration.get(`pnpShebang`);
+    const pnpZipBackend = project.configuration.get(`pnpZipBackend`);
 
     const packageRegistry = new Map()
 
     const packageRegistryData = JSON.parse(fs.readFileSync(this.packageRegistryDataPath, 'utf8'))
 
     let topLevelPackage = null
+    let topLevelPackageIdent = null
 
     const outDirectoryReal = fs.realpathSync(this.outDirectory)
 
@@ -294,6 +313,7 @@ class GeneratePnpFile extends BaseCommand {
 
       if (`${pkg.name}@${pkg.reference}` === this.topLevelPackageLocator) {
         topLevelPackage = packageData
+        topLevelPackageIdent = {name: pkg.name, reference: pkg.reference}
       }
     }
 
@@ -311,9 +331,34 @@ class GeneratePnpFile extends BaseCommand {
       ignorePattern,
       packageRegistry,
       shebang,
+      pnpZipBackend,
     }
 
-    const loaderFile = generateInlinedScript(pnpSettings);
+    // @yarnpkg/pnp 4.1.3 stopped serializing whatever the caller put at
+    // packageRegistry[null][null]. It now derives the top level entry instead,
+    // by looking for the dependency tree root whose packageLocation is "./"
+    // (see generatePackageRegistryData). Packages built here live at
+    // ./node_modules/<name>/ relative to the .pnp.cjs, so nothing matches and
+    // the entry is silently dropped, which breaks both
+    // pnpapi.getPackageInformation(pnpapi.topLevel) and every top level
+    // fallback resolution. Generate the state on its own and put the entry
+    // back, exactly as the pre-4.1.3 serializer did.
+    const {dataFile} = generateSplitScript(pnpSettings);
+    const runtimeState = JSON.parse(dataFile);
+
+    if (!runtimeState.packageRegistryData.some(([name]) => name === null)) {
+      const topLevelStore = runtimeState.packageRegistryData
+        .find(([name]) => name === topLevelPackageIdent.name)?.[1];
+      const topLevelData = topLevelStore
+        ?.find(([reference]) => reference === topLevelPackageIdent.reference)?.[1];
+
+      if (topLevelData == null)
+        throw new Error(`Could not find the top level package in the generated runtime state, this is NEEDED for the .pnp.cjs to be correctly generated`);
+
+      runtimeState.packageRegistryData.unshift([null, [[null, topLevelData]]]);
+    }
+
+    const loaderFile = generateLoader(shebang, generateInlinedSetup(runtimeState));
 
     await xfs.changeFilePromise(pnpPath.cjs, loaderFile, {
       automaticNewlines: true,
