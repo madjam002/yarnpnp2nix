@@ -10,6 +10,54 @@ let
     export YARN_COMPRESSION_LEVEL="${toString (yarnManifestSettings.compressionLevel or 0)}"
   '';
 
+  # Where a package's own files sit inside its derivation, relative to $out.
+  #
+  # Node refuses to strip TypeScript types from any file whose path contains a
+  # `node_modules` segment (ERR_UNSUPPORTED_NODE_MODULES_TYPE_STRIPPING). The
+  # check is purely lexical -- `isUnderNodeModules` in Node's `internal/util` is
+  # a regex against the path, with no realpath and no manifest inspection -- and
+  # there is no flag to disable it (nodejs/node#57215 was closed as not
+  # planned). A package that runs TypeScript directly, with no build step,
+  # therefore cannot start from under one.
+  #
+  # Opt such a package out by setting `packageDirectory` in packageOverrides:
+  #
+  #   "my-backend@workspace:services/backend" = {
+  #     packageDirectory = "pkg";
+  #   };
+  #
+  # Renaming the directory is enough: PnP addresses packages by the
+  # packageLocation recorded in .pnp.cjs and does not care what the directory is
+  # called. Consumers that need the files should read `passthru.packageLocation`
+  # rather than assuming a layout.
+  #
+  # Two kinds of package may not move, and asking is an error rather than a
+  # silent no-op:
+  #
+  #  * Fetched packages. Their outputHash covers the exact tree Yarn's zip
+  #    produces, which is rooted at `node_modules/<name>`, so relocating one
+  #    would invalidate every hash in the manifest. They hold published
+  #    JavaScript, so there is nothing to gain either.
+  #  * Packages that are not unplugged. Those output a zip, and `node_modules/`
+  #    is the prefix *inside* it that Yarn's zip mounting expects.
+  defaultPackageDir = "node_modules";
+
+  packageDirFor = packageManifest:
+    let
+      locator = "${packageManifest.name}@${packageManifest.reference}";
+      src = packageManifest.src or null;
+      isSourceTgz = src != null && (last (splitString "." src)) == "tgz";
+      isSourcePatch = src != null && (substring 0 6 packageManifest.reference) == "patch:";
+      willFetch = src == null || isSourceTgz || isSourcePatch;
+      shouldBeUnplugged = packageManifest.shouldBeUnplugged or false;
+      requested = packageManifest.packageDirectory or null;
+    in
+    if requested == null then defaultPackageDir
+    else if willFetch then throw "packageDirectory was set on ${locator}, but it is fetched rather than built from source, and its outputHash covers the node_modules layout of the fetched zip. Remove the override."
+    else if !shouldBeUnplugged then throw "packageDirectory was set on ${locator}, but it is not unplugged, so its output is a zip in which node_modules/ is the prefix Yarn's zip mounting expects. Set shouldBeUnplugged as well, or remove the override."
+    else if hasInfix "node_modules" requested then throw "packageDirectory for ${locator} is \"${requested}\", which still contains a node_modules path segment and so defeats the point of setting it."
+    else requested;
+
   resolvePkg = pkg: if hasAttr "canonicalPackage" pkg then (
     pkg.canonicalPackage //
     (if hasAttr "dependencies" pkg then { inherit (pkg) dependencies; } else {}) //
@@ -132,6 +180,9 @@ let
       willBuild = !willFetch;
       willOutputBeZip = src == null && shouldBeUnplugged == false;
 
+      # `node_modules` unless this package opted out -- see packageDirFor above
+      pkgDir = packageDirFor packageManifest;
+
       locatorJSON = builtins.toJSON (builtins.toJSON {
         name = packageManifest.flatName;
         scope = packageManifest.scope;
@@ -242,7 +293,7 @@ let
             tmpDir=$PWD
             ${setupYarnBinScript { inherit yarnManifestSettings; }}
 
-            packageLocation=$out/node_modules/${name}
+            packageLocation=$out/${pkgDir}/${name}
             touch yarn.lock
 
             ${if src == null || isSourcePatch then "yarn nix fetch-by-locator ${locatorToFetchJSON} $tmpDir"
@@ -255,7 +306,7 @@ let
             tmpDir=$PWD
             ${setupYarnBinScript { inherit yarnManifestSettings; }}
 
-            packageLocation="$out/node_modules/${name}"
+            packageLocation="$out/${pkgDir}/${name}"
             packageDrvLocation="$out"
             mkdir -p $packageLocation
             ${createLockFileScript}
@@ -295,7 +346,7 @@ let
             export YARNNIX_PACK_DIRECTORY="${src}"
             ''}
 
-            packageLocation="$out/node_modules/${name}"
+            packageLocation="$out/${pkgDir}/${name}"
             packageDrvLocation="$out"
 
             if [ -f "$tmpDir/packageRegistryData.json" ]; then
@@ -315,7 +366,23 @@ let
             mkdir -p $out
             unzip -qq -d $out $tmpDir/output.zip
 
-            packageLocation="$out/node_modules/${name}"
+            ${if pkgDir != defaultPackageDir then ''
+            # Yarn's package zips are laid out internally as `node_modules/<name>/...`,
+            # so unzipping recreates the one path segment this package must not
+            # have (see packageDirFor above). Relocate it.
+            if [ -d "$out/node_modules/${name}" ]; then
+              # buildPhase already wrote the sources to the new location, but the
+              # freshly unzipped tree is the authoritative one -- it is what the
+              # package's own build produced, filtered through `yarn nix pack` --
+              # so replace rather than merge into it.
+              rm -rf "$out/${pkgDir}/${name}"
+              mkdir -p "$(dirname "$out/${pkgDir}/${name}")"
+              mv "$out/node_modules/${name}" "$out/${pkgDir}/${name}"
+              rm -rf "$out/node_modules"
+            fi
+            '' else ""}
+
+            packageLocation="$out/${pkgDir}/${name}"
             packageDrvLocation="$out"
             ${if build == "" then createLockFileScript else ""}
 
@@ -348,7 +415,7 @@ let
 
             # set executable bit with chmod for all bin scripts
             ${concatStringsSep "\n" (mapAttrsToList (binKey: binScript: ''
-            chmod +x $out/node_modules/${name}/${binScript}
+            chmod +x $out/${pkgDir}/${name}/${binScript}
             '') (if bin != null then bin else {}))}
           '' else " ";
 
@@ -368,6 +435,15 @@ let
       # without this workaround we get error: unexpected end-of-file errors
       finalDerivation = pkgs.stdenv.mkDerivation {
         name = outputName;
+
+        # A package's own files live in the separate `package` derivation, so a
+        # consumer that wants build output -- a frontend's `dist/`, say -- has to
+        # know where inside it they landed. Expose the location rather than the
+        # layout, so `packageDirectory` stays an implementation detail.
+        passthru = {
+          packageLocation = "${fetchDerivation}/${pkgDir}/${name}";
+        };
+
         phases =
           [ "generateRuntimePhase" ] ++
           (if bin != null then [ "wrapBinPhase" ] else []);
@@ -381,7 +457,7 @@ let
           tmpDir=$PWD
           ${setupYarnBinScript { inherit yarnManifestSettings; }}
 
-          packageLocation=${fetchDerivation}/node_modules/${name}
+          packageLocation=${fetchDerivation}/${pkgDir}/${name}
           packageDrvLocation=${fetchDerivation}
           ${createLockFileScriptForRuntime}
 
@@ -410,8 +486,8 @@ let
 
             $binSetup
 
-            ${if shouldBeUnplugged then ''exec ${fetchDerivation}/node_modules/${name}/${binScript} "\$@"''
-            else ''exec node ${fetchDerivation}/node_modules/${name}/${binScript} "\$@"''}
+            ${if shouldBeUnplugged then ''exec ${fetchDerivation}/${pkgDir}/${name}/${binScript} "\$@"''
+            else ''exec node ${fetchDerivation}/${pkgDir}/${name}/${binScript} "\$@"''}
             EOYP
             chmod +x $out/bin/${binKey}
             '') bin)}
@@ -552,6 +628,7 @@ let
           inherit pkg;
           inherit (pkg) name reference;
           canonicalReference = resolvedPkg.reference;
+          pkgDir = packageDirFor resolvedPkg;
           inherit (resolvedPkg) linkType;
           filterDependencies = resolvedPkg.filterDependencies or (name: true);
           manifest = filterAttrs (key: b: !(builtins.elem key [
@@ -597,7 +674,18 @@ let
               [ depPkg.name depPkg.reference ]
             ) (filterAttrs (name: v: filterDependencies name) data.pkg.dependencies) else {})
           );
-        };
+        }
+        # The plugin defaults to `<drvPath>/node_modules/<name>` for every package
+        # but the one being built, whose location createLockFileScript injects.
+        # That default is wrong for a package that set packageDirectory, so say
+        # where it actually went -- otherwise the package resolves fine from its
+        # own .pnp.cjs and is unreachable from every dependent's.
+        #
+        # Only emitted when it differs from the default, so a package that does
+        # not depend on a relocated one keeps byte-identical registry data.
+        // (optionalAttrs (data.pkgDir != defaultPackageDir) {
+          packageLocation = "${data.drv.package}/${data.pkgDir}/${data.name}";
+        });
       topLevelPackageData =
         if hasAttr "installCondition" topLevel && topLevel.installCondition != null && (topLevel.installCondition pkgs.stdenv) == false then null
         else

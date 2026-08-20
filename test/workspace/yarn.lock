@@ -5504,6 +5504,7 @@ __metadata:
     typescript: "npm:^4.8.4"
   bin:
     testa-peer-test: ./bin/testa-peer-test
+    testa-pnp-test: ./bin/testa-pnp-test
     testa-test: ./bin/testa-test
   languageName: unknown
   linkType: soft

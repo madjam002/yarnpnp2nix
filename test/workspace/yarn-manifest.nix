@@ -9408,6 +9408,7 @@ let
       bin = {
         "testa-peer-test" = "./bin/testa-peer-test";
         "testa-test" = "./bin/testa-test";
+        "testa-pnp-test" = "./bin/testa-pnp-test";
       };
       dependencies = {
         "@types/ws" = packages."@types/ws@npm:8.5.3";

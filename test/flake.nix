@@ -59,8 +59,18 @@
                   echo $PATH
                   tsc --version
                   tsc
+                  # testa keeps the default node_modules layout, and depends on
+                  # teste which does not -- see the teste override below
                   node topLevelTest.js
+                  node packageDirectoryTest.js
                 '';
+              };
+              # A package that cannot live under a node_modules path, exercising
+              # both the package's own layout and -- through testa, which depends
+              # on it and keeps the default layout -- resolution of a relocated
+              # dependency from someone else's .pnp.cjs.
+              "teste@workspace:packages/teste" = {
+                packageDirectory = "pkg";
               };
               "testb@workspace:packages/testb" = {
                 build = ''
