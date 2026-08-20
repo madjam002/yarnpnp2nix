@@ -42,13 +42,19 @@
                 # e.g
                 # outputHash = "sha512-3TVtFilKcMx170rnF8GfVtyqGUT/FnDcrZwlZX3ChtXrehLUKQwnkNlBnTrTdPBbrUygkkp3PZzH6VZrqsCHVQ==";
               };
-              "canvas@npm:2.10.1" = {
+              # The lockfile moved to canvas 3.x, which installs a prebuilt
+              # binary rather than compiling; the prebuilt links against system
+              # libraries that are not in the closure, so patch them in.
+              "canvas@npm:3.2.1" = {
+                # prebuild-install needs the network, and __noChroot also drops
+                # the fixed outputHash, without which the patched binary below
+                # could never differ from the recorded hash
                 __noChroot = true;
                 buildInputs = with channels.nixpkgs; ([
-                  autoconf zlib gcc automake pkg-config libtool file
-                  python3
+                  autoPatchelfHook
                   pixman cairo pango libpng libjpeg giflib librsvg libwebp libuuid
                 ]);
+                postInstallScript = "autoPatchelf $out";
               };
               "sharp@npm:0.31.1" = {
                 outputHashByPlatform."x86_64-linux" = "sha512-jirTC3XTIyBYEe1l9IgSr8S4zkkl6YvRNaqeQk1itXmbibRfk0KxziApSAmNByf+y0Z9vmMPmnJpr6OE3PODOg==";

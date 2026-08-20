@@ -3418,6 +3418,7 @@ let
       outputName = "canvas-3.2.1-b6952492b7";
       outputHashByPlatform = {
         "aarch64-darwin" = "sha512-ppNQfKpz6RjdNVH/4gc4M6ke902RFTRpCeb6HgKWzHt8P2xKOBsQEnjmGOO6dympOiG9NHQ2+V4EBwu+jsBY2w==";
+        "x86_64-linux" = "sha512-kakPtuxE3hzGqv3KgGedUiTMa49tVyqyZkmK0mJLXYEKLyAp0lfe1O+isqZP1Cthm70Uy0SMfC8uZlHxOa1S3g==";
       };
       shouldBeUnplugged = true;
       flatName = "canvas";
@@ -4858,6 +4859,7 @@ let
       outputName = "fsevents-2.3.2-19706e7e35";
       outputHashByPlatform = {
         "aarch64-darwin" = "sha512-uka9eemEm6sAGeKXHGrM/cfX65Rd2RWVeApfmeZrgeCG7giNVo2HDHPIev7RIMz07ObyqlBN+EdFaJ8Q9JsnQA==";
+        "x86_64-linux" = "sha512-uka9eemEm6sAGeKXHGrM/cfX65Rd2RWVeApfmeZrgeCG7giNVo2HDHPIev7RIMz07ObyqlBN+EdFaJ8Q9JsnQA==";
       };
       shouldBeUnplugged = true;
       installCondition = stdenv: (stdenv.isDarwin);
@@ -7280,6 +7282,7 @@ let
       outputName = "node-addon-api-7.1.1-bfb302df19";
       outputHashByPlatform = {
         "aarch64-darwin" = "sha512-GdmFQMKIbhPeDFnHA3WRk8rWIp/k4E6JANJKzyh9SrGagQdBUlFRARuHivoroq96wz9IngLl0OodBh5WG5zteg==";
+        "x86_64-linux" = "sha512-GdmFQMKIbhPeDFnHA3WRk8rWIp/k4E6JANJKzyh9SrGagQdBUlFRARuHivoroq96wz9IngLl0OodBh5WG5zteg==";
       };
       shouldBeUnplugged = true;
       flatName = "node-addon-api";
@@ -9407,8 +9410,8 @@ let
       descriptorRange = "workspace:packages/testa";
       bin = {
         "testa-peer-test" = "./bin/testa-peer-test";
-        "testa-test" = "./bin/testa-test";
         "testa-pnp-test" = "./bin/testa-pnp-test";
+        "testa-test" = "./bin/testa-test";
       };
       dependencies = {
         "@types/ws" = packages."@types/ws@npm:8.5.3";
